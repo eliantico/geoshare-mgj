@@ -107,7 +107,8 @@
   });
 
   socket.on('nueva-ubicacion', (datos) => {
-    L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre || "Ubicación");
+    L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre || "Ubicación");  // Agrega tu propia ubicación
+  L.marker([miUbicacion.lat, miUbicacion.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[30,30]})}).addTo(mapa).bindPopup("Tú").openPopup();
   });
 
   socket.on('alerta-sos', (datos) => {
