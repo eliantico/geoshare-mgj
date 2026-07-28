@@ -44,3 +44,4 @@ servidor.listen(PUERTO, () => {
   socket.on('disconnect', () => console.log('❌ Desconectado'));
 });
 
+archivo movido correctamente
