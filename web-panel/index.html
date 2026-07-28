@@ -51,23 +51,42 @@
 
 <script>
   const socket = io();
-  let mapa, miUbicacion = null, grupoActivo = null;
+  let mapa, miUbicacion = null, grupoActivo = null, miMarcador = null;
 
-  // Iniciar mapa
+  // Iniciar mapa en Buenos Aires
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-  // Obtener ubicación automática
+  // Obtener y MOSTRAR tu ubicación EN CUANTO des permiso
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(posicion => {
       miUbicacion = {
         lat: posicion.coords.latitude,
         lng: posicion.coords.longitude
       };
-      mapa.setView([miUbicacion.lat, miUbicacion.lng], 15);
+      // Centrar mapa en ti
+      mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
+      // Dibujar tu marcador si no existe
+      if (!miMarcador) {
+        miMarcador = L.marker([miUbicacion.lat, miUbicacion.lng], {
+          icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
+        }).addTo(mapa).bindPopup("Tú 📍").openPopup();
+      } else {
+        miMarcador.setLatLng([miUbicacion.lat, miUbicacion.lng]);
+      }
+      // Si estás en un grupo, enviar ubicación a todos
+      if (grupoActivo) {
+        socket.emit('ubicacion', {
+          grupo: grupoActivo,
+          nombre: document.getElementById('nombre').value.trim(),
+          ...miUbicacion
+        });
+      }
     }, error => {
       mostrarMensaje("No se pudo obtener tu ubicación", "alerta");
     });
+  } else {
+    mostrarMensaje("Tu navegador no admite ubicación", "alerta");
   }
 
   // Botones
@@ -107,8 +126,9 @@
   });
 
   socket.on('nueva-ubicacion', (datos) => {
-    L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre || "Ubicación");  // Agrega tu propia ubicación
-  L.marker([miUbicacion.lat, miUbicacion.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[30,30]})}).addTo(mapa).bindPopup("Tú").openPopup();
+    // No dibujar tu propia ubicación otra vez
+    if (datos.nombre === document.getElementById('nombre').value.trim()) return;
+    L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre || "Ubicación");
   });
 
   socket.on('alerta-sos', (datos) => {
