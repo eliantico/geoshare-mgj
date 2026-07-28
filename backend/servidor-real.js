@@ -53,5 +53,5 @@ servidor.listen(PUERTO, '0.0.0.0', () => {
 
   socket.on('disconnect', () => console.log('❌ Desconectado'));
 });
-
+servidor.listen(PUERTO, '0.0.0.0', () => {
 archivo movido correctamente
