@@ -29,9 +29,16 @@ io.on('connection', (socket) => {
     socket.emit('entrada-ok', datos.grupo);
   });
 
-  socket.on('ubicacion', (datos) => {const PUERTO = process.env.PORT || 3000;
-servidor.listen(PUERTO, () => {
-  console.log('🚀 Sistema listo');
+  socket.on('ubicacion', (datos) =>const PUERTO = process.env.PORT || 3000;
+
+// Ruta para que Render sepa que funciona
+app.get('/', (req, res) => {
+  res.send('✅ GeoShare funcionando');
+});
+
+servidor.listen(PUERTO, '0.0.0.0', () => {
+  console.log('🚀 Sistema listo en puerto', PUERTO);
+}); 
 });
     io.to(datos.grupo).emit('nueva-ubicacion', datos);
   });
