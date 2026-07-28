@@ -46,6 +46,9 @@ servidor.listen(PUERTO, '0.0.0.0', () => {
   // ✅ REENVÍA LA ALERTA CON UBICACIÓN A TODOS
   socket.on('sos', (datos) => {
     io.to(datos.grupo).emit('alerta-sos', datos);
+    app.get('/', (req, res) => {
+  res.send('✅ GeoShare funcionando');
+});
   });
 
   socket.on('disconnect', () => console.log('❌ Desconectado'));
