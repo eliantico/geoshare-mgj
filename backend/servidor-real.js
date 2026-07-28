@@ -9,6 +9,11 @@ const io = new Server(servidor);
 
 app.use(express.static(path.join(__dirname, '../web-panel')));
 
+// Ruta obligatoria para que Render reconozca que funciona
+app.get('/', (req, res) => {
+  res.send('✅ GeoShare funcionando correctamente');
+});
+
 const grupos = {};
 
 io.on('connection', (socket) => {
@@ -29,29 +34,18 @@ io.on('connection', (socket) => {
     socket.emit('entrada-ok', datos.grupo);
   });
 
-  socket.on('ubicacion', (datos) =>const PUERTO = process.env.PORT || 3000;
-
-// Ruta para que Render sepa que funciona
-app.get('/', (req, res) => {
-  res.send('✅ GeoShare funcionando');
-});
-
-servidor.listen(PUERTO, '0.0.0.0', () => {
-  console.log('🚀 Sistema listo en puerto', PUERTO);
-}); 
-});
+  socket.on('ubicacion', (datos) => {
     io.to(datos.grupo).emit('nueva-ubicacion', datos);
   });
 
-  // ✅ REENVÍA LA ALERTA CON UBICACIÓN A TODOS
   socket.on('sos', (datos) => {
     io.to(datos.grupo).emit('alerta-sos', datos);
-    app.get('/', (req, res) => {
-  res.send('✅ GeoShare funcionando');
-});
   });
 
   socket.on('disconnect', () => console.log('❌ Desconectado'));
 });
+
+const PUERTO = process.env.PORT || 3000;
 servidor.listen(PUERTO, '0.0.0.0', () => {
-archivo movido correctamente
+  console.log('🚀 Sistema listo en puerto', PUERTO);
+});
