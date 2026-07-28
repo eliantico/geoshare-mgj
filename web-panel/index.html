@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoShare MGJ 🛰️</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    .cabecera { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 18px; text-align: center; }
+    .contenedor { max-width: 600px; margin: 15px auto; padding: 0 15px; }
+    .caja { background: white; border-radius: 14px; padding: 20px; margin: 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h2 { color: #1e40af; margin-bottom: 12px; border-bottom: 2px solid #dbeafe; padding-bottom: 8px; }
+    input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+    button { width: 100%; padding: 13px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin: 8px 0; }
+    .boton-azul { background: #2563eb; color: white; }
+    .boton-rojo { background: #dc2626; color: white; }
+    .boton-naranja { background: #f97316; color: white; }
+    .codigo { font-size: 28px; font-weight: bold; color: #2563eb; text-align: center; padding: 15px; background: #eff6ff; border-radius: 10px; margin: 10px 0; letter-spacing: 2px; }
+    .estado { padding: 10px; border-radius: 8px; margin: 8px 0; font-weight: 500; }
+    .verde { background: #dcfce7; color: #166534; }
+    .oculto { display: none; }
+    #mapa { height: 450px; border-radius: 12px; margin-top: 10px; border: 2px solid #e2e8f0; }
+    .sos-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .sos-btn { padding: 15px; font-size: 14px; }
+    .alerta { background: #fef2f2; border: 2px solid #ef4444; padding: 12px; border-radius: 8px; margin: 10px 0; animation: parpadeo 1s infinite; }
+    @keyframes parpadeo { 50% { opacity: 0.7; } }
+  </style>
+</head>
+<body>
+
+<div class="cabecera">
+  <h1>🛰️ GeoShare MGJ - Seguimiento y Seguridad</h1>
+  <p>Grupos privados · Ubicación en tiempo real · Alertas de emergencia</p>
+</div>
+
+<div class="contenedor">
+  <div id="estado" class="estado verde">🟢 Conectado y listo</div>
+
+  <!-- Crear grupo privado -->
+  <div id="crearCaja" class="caja">
+    <h2>🔑 Crear grupo privado</h2>
+    <p>Ej: <b>MGJ-DELIVERY-01</b> / <b>MGJ-FLOTA</b> / <b>MGJ-FAMILIA</b></p>
+    <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
+    <input type="text" id="codigoGrupo" placeholder="Código secreto de acceso">
+    <input type="text" id="miNombre" placeholder="Tu nombre / número">
+    <button class="boton-azul" onclick="crearGrupo()">Crear y activar ✅</button>
+    <div id="grupoCreado" class="oculto">
+      <p>Grupo creado. Comparte estos datos solo con quienes autorices:</p>
+      <div class="codigo" id="datosGrupo"></div>
+    </div>
+  </div>
+
+  <!-- Entrar a grupo -->
+  <div id="entrarCaja" class="caja">
+    <h2>🔍 Entrar a un grupo</h2>
+    <input type="text" id="entrarNombre" placeholder="Nombre del grupo">
+    <input type="text" id="entrarCodigo" placeholder="Código secreto">
+    <input type="text" id="entrarYo" placeholder="Tu nombre / número">
+    <button class="boton-azul" onclick="entrarGrupo()">Acceder 🚪</button>
+  </div>
+
+  <!-- Mapa y controles -->
+  <div id="mapaCaja" class="caja oculto">
+    <h2>📍 Mapa en tiempo real</h2>
+    <div id="alertas"></div>
+    <div id="mapa"></div>
+    
+    <h3 style="margin-top:15px; color:#dc2626;">🆘 ALERTA DE EMERGENCIA</h3>
+    <div class="sos-menu">
+      <button class="boton-rojo sos-btn" onclick="enviarSOS('general')">🆘 General</button>
+      <button class="boton-naranja sos-btn" onclick="enviarSOS('averia')">🛠️ Avería</button>
+      <button class="boton-rojo sos-btn" onclick="enviarSOS('accidente')">⚠️ Accidente</button>
+      <button class="boton-rojo sos-btn" onclick="enviarSOS('seguridad')">🦺 Seguridad</button>
+    </div>
+
+    <button class="boton-rojo" style="margin-top:15px;" onclick="salir()">Salir del grupo 🚫</button>
+  </div>
+</div>
+
+<script>  const socket = io();
+  let mapa, grupoActivo = '', miNombre = '';
+  let marcadores = {};
+  let alertaActiva = null;
+
+  // Iniciar mapa
+  function prepararMapa() {
+    if (mapa) return;
+    mapa = L.map('mapa').setView([-34.6037, -58.3816], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+  }
+
+  // Crear grupo
+  function crearGrupo() {
+    const nom = document.getElementById('nombreGrupo').value.trim();
+    const cod = document.getElementById('codigoGrupo').value.trim();
+    const yo = document.getElementById('miNombre').value.trim();
+    if (!nom || !cod || !yo) return alert('Completa todos los datos');
+    
+    grupoActivo = nom + '||' + cod;
+    miNombre = yo;
+    socket.emit('crear-grupo', {grupo: grupoActivo, nombre: miNombre});
+    
+    document.getElementById('datosGrupo').innerHTML = `Grupo: ${nom}<br>Código: ${cod}`;
+    document.getElementById('grupoCreado').classList.remove('oculto');
+    document.getElementById('mapaCaja').classList.remove('oculto');
+    prepararMapa();
+    iniciarUbicacion();
+  }
+
+  // Entrar a grupo
+  function entrarGrupo() {
+    const nom = document.getElementById('entrarNombre').value.trim();
+    const cod = document.getElementById('entrarCodigo').value.trim();
+    const yo = document.getElementById('entrarYo').value.trim();
+    if (!nom || !cod || !yo) return alert('Completa todos los datos');
+    
+    grupoActivo = nom + '||' + cod;
+    miNombre = yo;
+    socket.emit('entrar-grupo', {grupo: grupoActivo, nombre: miNombre});
+    
+    document.getElementById('crearCaja').classList.add('oculto');
+    document.getElementById('entrarCaja').classList.add('oculto');
+    document.getElementById('mapaCaja').classList.remove('oculto');
+    prepararMapa();
+    iniciarUbicacion();
+  }
+
+  // Ubicación automática
+  function iniciarUbicacion() {
+    if (!navigator.geolocation) return alert('No hay ubicación');
+    navigator.geolocation.watchPosition(pos => {
+      const datos = {
+        grupo: grupoActivo,
+        quien: miNombre,
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        hora: new Date().toLocaleTimeString()
+      };
+      socket.emit('ubicacion', datos);
+      actualizarMarcador(datos);
+    }, err => alert('Activa la ubicación'), {enableHighAccuracy:true});
+  }
+
+  function actualizarMarcador(d) {
+    if (marcadores[d.quien]) mapa.removeLayer(marcadores[d.quien]);
+    marcadores[d.quien] = L.marker([d.lat, d.lon]).bindPopup(`${d.quien} - ${d.hora}`).addTo(mapa);
+    mapa.setView([d.lat, d.lon], 14);
+  }
+
+  // Enviar SOS con ubicación
+  function enviarSOS(tipo) {
+    const textos = {
+      general: '🆘 EMERGENCIA GENERAL',
+      averia: '🛠️ PROBLEMA MECÁNICO / AVERÍA',
+      accidente: '⚠️ POSIBLE ACCIDENTE',
+      seguridad: '🦺 RIESGO DE SEGURIDAD / ROBO'
+    };
+    if (!confirm(`¿Confirmar alerta: ${textos[tipo]}?`)) return;
+
+    navigator.geolocation.getCurrentPosition(pos => {
+      socket.emit('sos', {
+        grupo: grupoActivo,
+        quien: miNombre,
+        tipo: textos[tipo],
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude
+      });
+    });
+  }
+
+  // Recibir alertas y MARCAR EN EL MAPA
+  socket.on('alerta-sos', (a) => {
+    // Mostrar aviso
+    document.getElementById('alertas').innerHTML = `
+      <div class="alerta">
+        <strong>${a.tipo}</strong><br>
+        Enviado por: ${a.quien}
+      </div>
+    `;
+
+    // Poner punto ROJO ESPECIAL en el lugar del siniestro
+    if (alertaActiva) mapa.removeLayer(alertaActiva);
+    alertaActiva = L.marker([a.lat, a.lon], {
+      icon: L.divIcon({className: 'alerta-punto', html: '🔴', iconSize: [30,30]})
+    }).bindPopup(`🚨 ${a.tipo}<br>${a.quien}`).addTo(mapa);
+    mapa.setView([a.lat, a.lon], 16);
+
+    setTimeout(() => document.getElementById('alertas').innerHTML = '', 20000);
+  });
+
+  // Recibir ubicaciones
+  socket.on('nueva-ubicacion', d => actualizarMarcador(d));
+
+  function salir() { location.reload(); }
+  
+</script>
+</body>
+</html>
