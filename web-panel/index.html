@@ -108,7 +108,8 @@
     navigator.geolocation.watchPosition(
       (pos) => {
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
+        // Solo centra la primera vez; después no se mueve solo
+if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
         if (!miPunto) {
           miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
             icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
