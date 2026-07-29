@@ -50,7 +50,11 @@
 </div>
 
 <div class="aviso-invite oculto" id="inviteBox">
-  ✅ Grupo listo: <span id="codMostrar"></span> — Comparte este código o envíalo por mensaje
+  ✅ Grupo listo: <span id="codMostrar"></span>
+  <div class="panel" style="margin-top:8px; padding:5px;">
+    <input type="tel" id="numeroInvitar" placeholder="Número para invitar (ej: 11XXXXXXX)" style="min-width:220px;">
+    <button class="boton azul" onclick="enviarInvitacion()">📨 Enviar invitación</button>
+  </div>
 </div>
 
 <div class="panel oculto" id="alertasDelivery">
@@ -100,7 +104,6 @@
     navigator.geolocation.watchPosition(
       (pos) => {
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        // Solo centra la primera vez; después no se mueve solo
         if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
         
         if (!miPunto) {
@@ -135,6 +138,15 @@
     socket.disconnect();
     mostrarMensaje("✅ Saliste. Se cortó toda comunicación", "bien");
     setTimeout(() => location.reload(), 2000);
+  }
+
+  function enviarInvitacion() {
+    const num = document.getElementById('numeroInvitar').value.trim();
+    const cod = document.getElementById('codMostrar').textContent;
+    if (!num || !cod) return mostrarMensaje("Poné el número", "mal");
+    const texto = `🛰️ GeoShare: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
+    window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, '_blank');
+    mostrarMensaje("✅ Se abrió WhatsApp con el mensaje listo", "bien");
   }
 
   document.getElementById('btnCrear').addEventListener('click', () => {
@@ -181,9 +193,7 @@
     if(datos.tipo==='llegue') texto="✅ LLEGÓ";
     if(datos.tipo==='demoro') texto="⏳ SE DEMORARÁ";
     
-    // El mapa salta DIRECTO a la ubicación de la alerta
     mapa.setView([datos.lat, datos.lng], 16);
-    
     L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
     alert(texto + " RECIBIDA");
   });
