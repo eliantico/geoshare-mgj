@@ -25,7 +25,7 @@
     .gris { background: #6c757d; color: white; }
     .oculto { display: none !important; }
     .aviso-invite { background: #d1ecf1; padding: 10px; text-align: center; color: #0c5460; font-weight: bold; }
-#mapa { width: 100%; height: calc(100vh - 200px); min-height: 500px; }
+    #mapa { width: 100%; height: calc(100vh - 200px); min-height: 500px; }
     .mensaje { padding: 10px; text-align: center; display: none; font-weight: bold; }
     .bien { background: #d4edda; color: #155724; }
     .mal { background: #f8d7da; color: #721c24; }
@@ -36,14 +36,12 @@
 <div class="cabecera">🛰️ GeoShare - Seguimiento Privado</div>
 <div class="paso">Paso 1: Elige tu tipo de uso</div>
 
-<!-- CATEGORÍAS PRINCIPALES -->
 <div class="panel" id="categorias">
   <button class="boton cat" onclick="elegir('delivery')">🚚 Repartidores / Delivery</button>
   <button class="boton cat" onclick="elegir('familia')">👨‍👩‍👧‍👦 Familias</button>
   <button class="boton cat" onclick="elegir('general')">🛡️ Seguridad / General</button>
 </div>
 
-<!-- DATOS DE USUARIO Y GRUPO -->
 <div class="panel oculto" id="formulario">
   <input type="text" id="nombre" placeholder="Tu nombre o código">
   <input type="text" id="codigo" placeholder="Código del grupo">
@@ -51,12 +49,10 @@
   <button class="boton verde" id="btnEntrar">Entrar al Grupo</button>
 </div>
 
-<!-- INVITACIÓN (ESTRUCTURA LISTA PARA MENSAJES) -->
 <div class="aviso-invite oculto" id="inviteBox">
   ✅ Grupo listo: <span id="codMostrar"></span> — Comparte este código o envíalo por mensaje
 </div>
 
-<!-- BOTONES DE ALERTA POR CATEGORÍA -->
 <div class="panel oculto" id="alertasDelivery">
   <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
   <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
@@ -75,14 +71,12 @@
   <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
   <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
   <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Riesgo / Peligro</button>
-</div><div class="panel oculto" id="botonSalir">
+</div>
+
+<div class="panel oculto" id="botonSalir">
   <button class="boton gris" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
 </div>
-<div class="panel oculto" id="alertasGeneral">
- <div class="panel oculto" id="botonSalir">
-  <button class="boton gris" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
-</div>
-</div>
+
 <div id="mensaje" class="mensaje"></div>
 <div id="mapa"></div>
 
@@ -93,23 +87,22 @@
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-  // ELEGIR CATEGORÍA
   function elegir(tipo) {
     tipoUso = tipo;
     document.getElementById('categorias').classList.add('oculto');
     document.getElementById('formulario').classList.remove('oculto');
-     document.getElementById('botonSalir').classList.remove('oculto'); //
+    document.getElementById('botonSalir').classList.remove('oculto');
     document.getElementById('alertas'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.remove('oculto');
   }
 
-  // ACTIVAR UBICACIÓN
   function activarUbicacion() {
     if (!navigator.geolocation) return mostrarMensaje("Tu dispositivo no admite ubicación", "mal");
     navigator.geolocation.watchPosition(
       (pos) => {
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         // Solo centra la primera vez; después no se mueve solo
-if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
+        if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
+        
         if (!miPunto) {
           miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
             icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
@@ -129,14 +122,21 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
     );
   }
 
-  // ENVIAR ALERTA
   function enviarSOS(tipo) {
     if (!grupoActivo || !miUbicacion) return mostrarMensaje("Primero crea o entra a un grupo", "mal");
     socket.emit('sos', { grupo: grupoActivo, tipo: tipo, ...miUbicacion });
     mostrarMensaje("Alerta enviada a todos", "bien");
   }
 
-  // BOTONES PRINCIPALES
+  function salirGrupo() {
+    if (!confirm("¿Seguro querés salir y dejar de compartir tu ubicación?")) return;
+    grupoActivo = null;
+    miPunto = null;
+    socket.disconnect();
+    mostrarMensaje("✅ Saliste. Se cortó toda comunicación", "bien");
+    setTimeout(() => location.reload(), 2000);
+  }
+
   document.getElementById('btnCrear').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
     const cod = document.getElementById('codigo').value.trim();
@@ -153,7 +153,6 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
     socket.emit('entrar-grupo', { nombre: nom, grupo: cod });
   });
 
-  // RESPUESTAS DEL SERVIDOR
   socket.on('grupo-creado', (cod) => {
     grupoActivo = cod;
     document.getElementById('codMostrar').textContent = cod;
@@ -186,11 +185,7 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
     mapa.setView([datos.lat, datos.lng], 16);
     
     L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
-    
     alert(texto + " RECIBIDA");
-  });
-
-  });
   });
 
   function mostrarMensaje(texto, tipo) {
@@ -199,14 +194,7 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
     caja.className = `mensaje ${tipo}`;
     caja.style.display = 'block';
     setTimeout(() => caja.style.display = 'none', 6000);
-  }function salirGrupo() {
-  if (!confirm("¿Seguro querés salir y dejar de compartir tu ubicación?")) return;
-  grupoActivo = null;
-  miPunto = null;
-  socket.disconnect();
-  mostrarMensaje("✅ Saliste. Se cortó toda comunicación", "bien");
-  setTimeout(() => location.reload(), 2000);
-}
+  }
 </script>
 </body>
 </html>
