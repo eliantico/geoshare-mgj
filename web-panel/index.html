@@ -106,13 +106,15 @@
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
         
-        if (!miPunto) {
+        // Si el punto se borró, lo volvemos a crear
+        if (!miPunto && miUbicacion) {
           miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
             icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
           }).addTo(mapa).bindPopup("Tú 📍").openPopup();
-        } else {
+        } else if (miPunto) {
           miPunto.setLatLng([miUbicacion.lat, miUbicacion.lng]);
         }
+
         if (grupoActivo) {
           socket.emit('ubicacion', {
             grupo: grupoActivo, nombre: document.getElementById('nombre').value.trim(),
@@ -145,8 +147,11 @@
     const cod = document.getElementById('codMostrar').textContent;
     if (!num || !cod) return mostrarMensaje("Poné el número", "mal");
     const texto = `🛰️ GeoShare: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
-    window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, '_blank');
-    mostrarMensaje("✅ Se abrió WhatsApp con el mensaje listo", "bien");
+    // Se abre en ventanita chica
+    window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, 'whatsapp_invite', 'width=500,height=700,top=50,left=50');
+    // Volvemos a la app automáticamente
+    setTimeout(() => window.focus(), 300);
+    mostrarMensaje("✅ Mensaje listo en WhatsApp", "bien");
   }
 
   document.getElementById('btnCrear').addEventListener('click', () => {
@@ -180,6 +185,7 @@
   socket.on('error', (txt) => mostrarMensaje(txt, "mal"));
 
   socket.on('nueva-ubicacion', (datos) => {
+    // Ignoramos tu propia ubicación para no borrar ni duplicar tu punto
     if (datos.nombre === document.getElementById('nombre').value.trim()) return;
     L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre);
   });
