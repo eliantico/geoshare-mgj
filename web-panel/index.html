@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GeoShare - Seguimiento Privado</title>
+  <title>RutaLink - Seguimiento Privado</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/socket.io/socket.io.js"></script>
@@ -33,7 +33,7 @@
 </head>
 <body>
 
-<div class="cabecera">🛰️ GeoShare - Seguimiento Privado</div>
+<div class="cabecera">🛰️ RutaLink - Seguimiento Privado</div>
 <div class="paso">Paso 1: Elige tu tipo de uso</div>
 
 <div class="panel" id="categorias">
@@ -106,7 +106,6 @@
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
         
-        // Si el punto se borró, lo volvemos a crear
         if (!miPunto && miUbicacion) {
           miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
             icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
@@ -146,10 +145,8 @@
     const num = document.getElementById('numeroInvitar').value.trim();
     const cod = document.getElementById('codMostrar').textContent;
     if (!num || !cod) return mostrarMensaje("Poné el número", "mal");
-    const texto = `🛰️ GeoShare: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
-    // Se abre en ventanita chica
+    const texto = `🛰️ RutaLink: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
     window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, 'whatsapp_invite', 'width=500,height=700,top=50,left=50');
-    // Volvemos a la app automáticamente
     setTimeout(() => window.focus(), 300);
     mostrarMensaje("✅ Mensaje listo en WhatsApp", "bien");
   }
@@ -185,7 +182,6 @@
   socket.on('error', (txt) => mostrarMensaje(txt, "mal"));
 
   socket.on('nueva-ubicacion', (datos) => {
-    // Ignoramos tu propia ubicación para no borrar ni duplicar tu punto
     if (datos.nombre === document.getElementById('nombre').value.trim()) return;
     L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre);
   });
