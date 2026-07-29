@@ -190,7 +190,14 @@
     caja.className = `mensaje ${tipo}`;
     caja.style.display = 'block';
     setTimeout(() => caja.style.display = 'none', 6000);
-  }
+  }function salirGrupo() {
+  if (!confirm("¿Seguro querés salir y dejar de compartir tu ubicación?")) return;
+  grupoActivo = null;
+  miPunto = null;
+  socket.disconnect();
+  mostrarMensaje("✅ Saliste. Se cortó toda comunicación", "bien");
+  setTimeout(() => location.reload(), 2000);
+}
 </script>
 </body>
 </html>
