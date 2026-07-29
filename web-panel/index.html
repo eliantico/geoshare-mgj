@@ -174,7 +174,6 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
   });
 
   socket.on('alerta-sos', (datos) => {
-  socket.on('alerta-sos', (datos) => {
     let texto = "🚨 ALERTA";
     if(datos.tipo==='accidente') texto="🚑 ACCIDENTE";
     if(datos.tipo==='averia') texto="🔧 AVERÍA / TÉCNICO";
@@ -189,6 +188,8 @@ if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
     L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
     
     alert(texto + " RECIBIDA");
+  });
+
   });
   });
 
