@@ -11,13 +11,21 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: #f5f7fa; }
     .cabecera { background: #1a73e8; color: white; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; }
+    .paso { padding: 12px; text-align: center; font-weight: bold; background: #e9ecef; }
     .panel { background: white; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
     input { padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; min-width: 200px; }
-    button { padding: 12px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; }
+    .boton { padding: 12px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+    .cat { background: #e7f1ff; color: #004085; border: 2px solid #b8daff; }
+    .cat:hover { background: #cce5ff; }
     .azul { background: #1a73e8; color: white; }
     .verde { background: #28a745; color: white; }
-    .rojo { background: #dc3545; color: white; font-size: 18px; padding: 15px 25px; }
-    #mapa { width: 100%; height: calc(100vh - 200px); }
+    .rojo { background: #dc3545; color: white; font-size: 15px; padding: 12px 18px; }
+    .naranja { background: #fd7e14; color: white; }
+    .amarillo { background: #ffc107; color: #212529; }
+    .gris { background: #6c757d; color: white; }
+    .oculto { display: none !important; }
+    .aviso-invite { background: #d1ecf1; padding: 10px; text-align: center; color: #0c5460; font-weight: bold; }
+    #mapa { width: 100%; height: calc(100vh - 380px); }
     .mensaje { padding: 10px; text-align: center; display: none; font-weight: bold; }
     .bien { background: #d4edda; color: #155724; }
     .mal { background: #f8d7da; color: #721c24; }
@@ -26,36 +34,74 @@
 <body>
 
 <div class="cabecera">🛰️ GeoShare - Seguimiento Privado</div>
+<div class="paso">Paso 1: Elige tu tipo de uso</div>
 
-<div class="panel">
-  <input type="text" id="nombre" placeholder="Tu nombre">
-  <input type="text" id="codigo" placeholder="Código del grupo">
-  <button class="azul" id="btnCrear">Crear Grupo</button>
-  <button class="verde" id="btnEntrar">Entrar al Grupo</button>
-  <button class="rojo" id="btnSOS">🚨 ENVIAR SOS</button>
+<!-- CATEGORÍAS PRINCIPALES -->
+<div class="panel" id="categorias">
+  <button class="boton cat" onclick="elegir('delivery')">🚚 Repartidores / Delivery</button>
+  <button class="boton cat" onclick="elegir('familia')">👨‍👩‍👧‍👦 Familias</button>
+  <button class="boton cat" onclick="elegir('general')">🛡️ Seguridad / General</button>
 </div>
-<div id="mensaje" class="mensaje"></div>
 
+<!-- DATOS DE USUARIO Y GRUPO -->
+<div class="panel oculto" id="formulario">
+  <input type="text" id="nombre" placeholder="Tu nombre o código">
+  <input type="text" id="codigo" placeholder="Código del grupo">
+  <button class="boton azul" id="btnCrear">Crear Grupo</button>
+  <button class="boton verde" id="btnEntrar">Entrar al Grupo</button>
+</div>
+
+<!-- INVITACIÓN (ESTRUCTURA LISTA PARA MENSAJES) -->
+<div class="aviso-invite oculto" id="inviteBox">
+  ✅ Grupo listo: <span id="codMostrar"></span> — Comparte este código o envíalo por mensaje
+</div>
+
+<!-- BOTONES DE ALERTA POR CATEGORÍA -->
+<div class="panel oculto" id="alertasDelivery">
+  <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
+  <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
+  <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Zona peligrosa</button>
+  <button class="boton amarillo" onclick="enviarSOS('retraso')">⏱️ Retraso</button>
+</div>
+
+<div class="panel oculto" id="alertasFamilia">
+  <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Alerta peligro</button>
+  <button class="boton verde" onclick="enviarSOS('llegue')">✅ Ya llegué</button>
+  <button class="boton amarillo" onclick="enviarSOS('demoro')">⏳ Me demoro</button>
+</div>
+
+<div class="panel oculto" id="alertasGeneral">
+  <button class="boton rojo" onclick="enviarSOS('general')">🚨 Alerta general</button>
+  <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
+  <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
+  <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Riesgo / Peligro</button>
+</div>
+
+<div id="mensaje" class="mensaje"></div>
 <div id="mapa"></div>
 
 <script>
   const socket = io();
-  let mapa, miUbicacion = null, miPunto = null, grupoActivo = null;
+  let mapa, miUbicacion = null, miPunto = null, grupoActivo = null, tipoUso = '';
 
-  // Iniciar mapa
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-  // Obtener y mostrar ubicación
+  // ELEGIR CATEGORÍA
+  function elegir(tipo) {
+    tipoUso = tipo;
+    document.getElementById('categorias').classList.add('oculto');
+    document.getElementById('formulario').classList.remove('oculto');
+    document.getElementById('alertas'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.remove('oculto');
+  }
+
+  // ACTIVAR UBICACIÓN
   function activarUbicacion() {
-    if (!navigator.geolocation) return mostrarMensaje("No hay ubicación", "mal");
-    
+    if (!navigator.geolocation) return mostrarMensaje("Tu dispositivo no admite ubicación", "mal");
     navigator.geolocation.watchPosition(
       (pos) => {
         miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
-        
-        // Dibujar o mover tu punto
         if (!miPunto) {
           miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
             icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
@@ -63,49 +109,48 @@
         } else {
           miPunto.setLatLng([miUbicacion.lat, miUbicacion.lng]);
         }
-
-        // Enviar a grupo si estás dentro
         if (grupoActivo) {
           socket.emit('ubicacion', {
-            grupo: grupoActivo,
-            nombre: document.getElementById('nombre').value.trim(),
-            lat: miUbicacion.lat,
-            lng: miUbicacion.lng
+            grupo: grupoActivo, nombre: document.getElementById('nombre').value.trim(),
+            lat: miUbicacion.lat, lng: miUbicacion.lng
           });
         }
       },
-      (err) => mostrarMensaje("Permite la ubicación para usar el sistema", "mal"),
+      () => mostrarMensaje("Por favor permite la ubicación", "mal"),
       { enableHighAccuracy: true }
     );
   }
 
-  // Botones
+  // ENVIAR ALERTA
+  function enviarSOS(tipo) {
+    if (!grupoActivo || !miUbicacion) return mostrarMensaje("Primero crea o entra a un grupo", "mal");
+    socket.emit('sos', { grupo: grupoActivo, tipo: tipo, ...miUbicacion });
+    mostrarMensaje("Alerta enviada a todos", "bien");
+  }
+
+  // BOTONES PRINCIPALES
   document.getElementById('btnCrear').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
     const cod = document.getElementById('codigo').value.trim();
-    if (!nom || !cod) return mostrarMensaje("Completa nombre y código", "mal");
+    if (!nom || !cod) return mostrarMensaje("Completa tus datos", "mal");
     activarUbicacion();
-    socket.emit('crear-grupo', { nombre: nom, grupo: cod });
+    socket.emit('crear-grupo', { nombre: nom, grupo: cod, tipo: tipoUso });
   });
 
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
     const cod = document.getElementById('codigo').value.trim();
-    if (!nom || !cod) return mostrarMensaje("Completa nombre y código", "mal");
+    if (!nom || !cod) return mostrarMensaje("Completa tus datos", "mal");
     activarUbicacion();
     socket.emit('entrar-grupo', { nombre: nom, grupo: cod });
   });
 
-  document.getElementById('btnSOS').addEventListener('click', () => {
-    if (!grupoActivo || !miUbicacion) return mostrarMensaje("Primero entra a un grupo", "mal");
-    socket.emit('sos', { grupo: grupoActivo, ...miUbicacion });
-    mostrarMensaje("Alerta SOS enviada", "bien");
-  });
-
-  // Respuestas del servidor
+  // RESPUESTAS DEL SERVIDOR
   socket.on('grupo-creado', (cod) => {
     grupoActivo = cod;
-    mostrarMensaje(`✅ Grupo creado: ${cod} - Compártelo con quien quieras`, "bien");
+    document.getElementById('codMostrar').textContent = cod;
+    document.getElementById('inviteBox').classList.remove('oculto');
+    mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
   });
 
   socket.on('entrada-ok', (cod) => {
@@ -121,8 +166,15 @@
   });
 
   socket.on('alerta-sos', (datos) => {
-    L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup("🚨 SOS").openPopup();
-    alert("¡ALERTA RECIBIDA!");
+    let texto = "🚨 ALERTA";
+    if(datos.tipo==='accidente') texto="🚑 ACCIDENTE";
+    if(datos.tipo==='averia') texto="🔧 AVERÍA / TÉCNICO";
+    if(datos.tipo==='peligro') texto="⚠️ RIESGO / PELIGRO";
+    if(datos.tipo==='retraso') texto="⏱️ RETRASO";
+    if(datos.tipo==='llegue') texto="✅ LLEGÓ";
+    if(datos.tipo==='demoro') texto="⏳ SE DEMORARÁ";
+    L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
+    alert(texto + " RECIBIDA");
   });
 
   function mostrarMensaje(texto, tipo) {
@@ -130,7 +182,7 @@
     caja.textContent = texto;
     caja.className = `mensaje ${tipo}`;
     caja.style.display = 'block';
-    setTimeout(() => caja.style.display = 'none', 5000);
+    setTimeout(() => caja.style.display = 'none', 6000);
   }
 </script>
 </body>
