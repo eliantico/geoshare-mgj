@@ -29,73 +29,131 @@
     .mensaje { padding: 10px; text-align: center; display: none; font-weight: bold; }
     .bien { background: #d4edda; color: #155724; }
     .mal { background: #f8d7da; color: #721c24; }
+    .acceso { max-width: 400px; margin: 30px auto; }
+    .acceso h2 { text-align: center; margin-bottom: 15px; color: #1a73e8; }
+    .acceso p { text-align: center; margin-bottom: 15px; color: #555; }
   </style>
 </head>
 <body>
 
 <div class="cabecera">🛰️ RutaLink - Seguimiento Privado</div>
-<div class="paso">Paso 1: Elige tu tipo de uso</div>
 
-<div class="panel" id="categorias">
-  <button class="boton cat" onclick="elegir('delivery')">🚚 Repartidores / Delivery</button>
-  <button class="boton cat" onclick="elegir('familia')">👨‍👩‍👧‍👦 Familias</button>
-  <button class="boton cat" onclick="elegir('general')">🛡️ Seguridad / General</button>
+<!-- PANTALLA DE ACCESO -->
+<div class="panel acceso" id="pantallaAcceso">
+  <h2>Bienvenido a RutaLink</h2>
+  <p>Las cuentas y registro son para usuarios con planes contratados</p>
+  <button class="boton azul" onclick="mostrarRegistro()">📝 Registrarse (Clientes)</button>
+  <button class="boton verde" onclick="mostrarLogin()">🔑 Iniciar Sesión (Clientes)</button>
+  <button class="boton cat" onclick="entrarSinCuenta()">🎯 Prueba rápida sin cuenta</button>
 </div>
 
-<div class="panel oculto" id="formulario">
-  <input type="text" id="nombre" placeholder="Tu nombre o código">
-  <input type="text" id="codigo" placeholder="Código del grupo">
-  <button class="boton azul" id="btnCrear">Crear Grupo</button>
-  <button class="boton verde" id="btnEntrar">Entrar al Grupo</button>
+<div class="panel oculto acceso" id="formRegistro">
+  <h2>Crear Cuenta</h2>
+  <input type="email" id="regMail" placeholder="Tu correo electrónico">
+  <input type="password" id="regClave" placeholder="Crear contraseña">
+  <button class="boton azul" onclick="registrar()">Registrarme</button>
+  <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
 
-<div class="aviso-invite oculto" id="inviteBox">
-  ✅ Grupo listo: <span id="codMostrar"></span>
-  <div class="panel" style="margin-top:8px; padding:5px;">
-    <input type="tel" id="numeroInvitar" placeholder="Número para invitar (ej: 11XXXXXXX)" style="min-width:220px;">
-    <button class="boton azul" onclick="enviarInvitacion()">📨 Enviar invitación</button>
+<div class="panel oculto acceso" id="formLogin">
+  <h2>Iniciar Sesión</h2>
+  <input type="email" id="logMail" placeholder="Tu correo">
+  <input type="password" id="logClave" placeholder="Tu contraseña">
+  <button class="boton verde" onclick="ingresar()">Ingresar</button>
+  <button class="boton gris" onclick="volverAcceso()">Volver</button>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="oculto" id="zonaApp">
+  <div class="paso">Paso 1: Elige tu tipo de uso</div>
+
+  <div class="panel" id="categorias">
+    <button class="boton cat" onclick="elegir('delivery')">🚚 Repartidores / Delivery</button>
+    <button class="boton cat" onclick="elegir('familia')">👨‍👩‍👧‍👦 Familias</button>
+    <button class="boton cat" onclick="elegir('general')">🛡️ Seguridad / General</button>
   </div>
-</div>
 
-<div class="panel oculto" id="alertasDelivery">
-  <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
-  <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
-  <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Zona peligrosa</button>
-  <button class="boton amarillo" onclick="enviarSOS('retraso')">⏱️ Retraso</button>
-</div>
+  <div class="panel oculto" id="formulario">
+    <input type="text" id="nombre" placeholder="Tu nombre o código">
+    <input type="text" id="codigo" placeholder="Código del grupo">
+    <button class="boton azul" id="btnCrear">Crear Grupo</button>
+    <button class="boton verde" id="btnEntrar">Entrar al Grupo</button>
+  </div>
 
-<div class="panel oculto" id="alertasFamilia">
-  <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Alerta peligro</button>
-  <button class="boton verde" onclick="enviarSOS('llegue')">✅ Ya llegué</button>
-  <button class="boton amarillo" onclick="enviarSOS('demoro')">⏳ Me demoro</button>
-</div>
+  <div class="aviso-invite oculto" id="inviteBox">
+    ✅ Grupo listo: <span id="codMostrar"></span>
+    <div class="panel" style="margin-top:8px; padding:5px;">
+      <input type="tel" id="numeroInvitar" placeholder="Número para invitar (ej: 11XXXXXXX)" style="min-width:220px;">
+      <button class="boton azul" onclick="enviarInvitacion()">📨 Enviar invitación</button>
+    </div>
+  </div>
 
-<div class="panel oculto" id="alertasGeneral">
-  <button class="boton rojo" onclick="enviarSOS('general')">🚨 Alerta general</button>
-  <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
-  <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
-  <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Riesgo / Peligro</button>
-</div>
+  <div class="panel oculto" id="alertasDelivery">
+    <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
+    <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
+    <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Zona peligrosa</button>
+    <button class="boton amarillo" onclick="enviarSOS('retraso')">⏱️ Retraso</button>
+  </div>
 
-<div class="panel oculto" id="botonSalir">
-  <button class="boton gris" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
-</div>
+  <div class="panel oculto" id="alertasFamilia">
+    <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Alerta peligro</button>
+    <button class="boton verde" onclick="enviarSOS('llegue')">✅ Ya llegué</button>
+    <button class="boton amarillo" onclick="enviarSOS('demoro')">⏳ Me demoro</button>
+  </div>
 
-<div id="mensaje" class="mensaje"></div>
-<div id="mapa"></div>
+  <div class="panel oculto" id="alertasGeneral">
+    <button class="boton rojo" onclick="enviarSOS('general')">🚨 Alerta general</button>
+    <button class="boton rojo" onclick="enviarSOS('accidente')">🚑 Accidente</button>
+    <button class="boton naranja" onclick="enviarSOS('averia')">🔧 Avería / Técnico</button>
+    <button class="boton rojo" onclick="enviarSOS('peligro')">⚠️ Riesgo / Peligro</button>
+  </div>
+
+  <div class="panel oculto" id="botonSalir">
+    <button class="boton gris" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
+  </div>
+
+  <div id="mensaje" class="mensaje"></div>
+  <div id="mapa"></div>
+</div>
 
 <script>
   const socket = io();
-  let mapa, miUbicacion = null, miPunto = null, grupoActivo = null, tipoUso = '';
+  let mapa, miUbicacion = null, miPunto = null, grupoActivo = null, codigoIngresado = '', tipoUso = '';
 
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+
+  // --- PANTALLA DE ACCESO ---
+  function mostrarRegistro() {
+    document.getElementById('pantallaAcceso').classList.add('oculto');
+    document.getElementById('formRegistro').classList.remove('oculto');
+  }
+  function mostrarLogin() {
+    document.getElementById('pantallaAcceso').classList.add('oculto');
+    document.getElementById('formLogin').classList.remove('oculto');
+  }
+  function volverAcceso() {
+    document.getElementById('formRegistro').classList.add('oculto');
+    document.getElementById('formLogin').classList.add('oculto');
+    document.getElementById('pantallaAcceso').classList.remove('oculto');
+  }
+  function entrarSinCuenta() {
+    document.getElementById('pantallaAcceso').classList.add('oculto');
+    document.getElementById('zonaApp').classList.remove('oculto');
+  }
+  function registrar() {
+    mostrarMensaje("✅ Registro: pronto habilitaremos tu cuenta", "bien");
+    setTimeout(() => entrarSinCuenta(), 1500);
+  }
+  function ingresar() {
+    mostrarMensaje("✅ Sesión iniciada", "bien");
+    setTimeout(() => entrarSinCuenta(), 1000);
+  }
 
   function elegir(tipo) {
     tipoUso = tipo;
     document.getElementById('categorias').classList.add('oculto');
     document.getElementById('formulario').classList.remove('oculto');
-    document.getElementById('botonSalir').classList.remove('oculto');
     document.getElementById('alertas'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.remove('oculto');
   }
 
@@ -153,29 +211,32 @@
 
   document.getElementById('btnCrear').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
-    const cod = document.getElementById('codigo').value.trim();
-    if (!nom || !cod) return mostrarMensaje("Completa tus datos", "mal");
+    codigoIngresado = document.getElementById('codigo').value.trim();
+    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
     activarUbicacion();
-    socket.emit('crear-grupo', { nombre: nom, grupo: cod, tipo: tipoUso });
+    socket.emit('crear-grupo', { nombre: nom, grupo: codigoIngresado, tipo: tipoUso });
   });
 
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
-    const cod = document.getElementById('codigo').value.trim();
-    if (!nom || !cod) return mostrarMensaje("Completa tus datos", "mal");
+    codigoIngresado = document.getElementById('codigo').value.trim();
+    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
     activarUbicacion();
-    socket.emit('entrar-grupo', { nombre: nom, grupo: cod });
+    socket.emit('entrar-grupo', { nombre: nom, grupo: codigoIngresado });
   });
 
   socket.on('grupo-creado', (cod) => {
     grupoActivo = cod;
     document.getElementById('codMostrar').textContent = cod;
     document.getElementById('inviteBox').classList.remove('oculto');
+    // SOLO el creador ve el botón de salir
+    document.getElementById('botonSalir').classList.remove('oculto');
     mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
   });
 
   socket.on('entrada-ok', (cod) => {
     grupoActivo = cod;
+    // LOS INVITADOS NUNCA ven el botón de salir
     mostrarMensaje(`✅ Entraste al grupo: ${cod}`, "bien");
   });
 
