@@ -9,20 +9,21 @@
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
-    body { background: #F0F4F8; color: #1A1A2E; }
+    html, body { height: 100%; }
+    body { background: #F0F4F8; color: #1A1A2E; display: flex; flex-direction: column; }
 
     /* CABECERA MODERNA CON ADORNOS */
-    .cabecera { background: #16213E; color: white; padding: 18px; text-align: center; font-size: 22px; font-weight: 600; position: relative; overflow: hidden; }
-    .cabecera::before { content: "🌍"; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 26px; opacity: 0.9; }
-    .cabecera::after { content: "🛰️"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 26px; opacity: 0.9; }
-    .descripcion { text-align: center; padding: 14px 20px; color: #64748B; font-size: 15px; background: white; border-bottom: 1px solid #E2E8F0; }
+    .cabecera { background: #16213E; color: white; padding: 14px 18px; text-align: center; font-size: 20px; font-weight: 600; position: relative; flex-shrink: 0; }
+    .cabecera::before { content: "🌍"; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
+    .cabecera::after { content: "🛰️"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
+    .descripcion { text-align: center; padding: 10px 15px; color: #64748B; font-size: 14px; background: white; border-bottom: 1px solid #E2E8F0; flex-shrink: 0; }
 
-    .paso { padding: 12px; text-align: center; font-weight: 600; color: #16213E; background: white; }
-    .panel { background: white; padding: 18px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; border-radius: 12px; margin: 10px; box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06); }
-    input { padding: 12px 14px; font-size: 15px; border: 1px solid #CBD5E1; border-radius: 8px; min-width: 210px; transition: 0.2s; }
+    .paso { padding: 10px; text-align: center; font-weight: 600; color: #16213E; background: white; flex-shrink: 0; }
+    .panel { background: white; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; border-radius: 12px; margin: 8px; box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06); flex-shrink: 0; }
+    input { padding: 10px 12px; font-size: 15px; border: 1px solid #CBD5E1; border-radius: 8px; min-width: 190px; transition: 0.2s; }
     input:focus { outline: none; border-color: #00D9FF; box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.15); }
 
-    .boton { padding: 12px 22px; font-size: 15px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+    .boton { padding: 10px 18px; font-size: 15px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
     .boton:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15, 52, 96, 0.12); }
     .cat { background: #E8F3FF; color: #0F3460; border: 1px solid #BFDBFE; }
     .cat:hover { background: #DBEAFE; }
@@ -32,24 +33,25 @@
     .naranja { background: #F97316; color: white; }
     .amarillo { background: #F59E0B; color: #1E293B; }
     .gris { background: #64748B; color: white; }
-    .boton-prueba { background: #10B981; font-size: 17px; padding: 14px 28px; margin: 12px 0; font-weight: 600; }
+    .boton-prueba { background: #10B981; font-size: 16px; padding: 12px 24px; margin: 10px 0; font-weight: 600; }
 
     .oculto { display: none !important; }
-    .aviso-invite { background: #ECFDF5; border: 1px solid #A7F3D0; padding: 12px; text-align: center; color: #065F46; font-weight: 500; margin: 10px; border-radius: 12px; }
-    #mapa { width: 100%; height: calc(100vh - 280px); min-height: 520px; border-radius: 0; }
-    .mensaje { padding: 12px; text-align: center; display: none; font-weight: 500; border-radius: 8px; margin: 8px; }
+    .aviso-invite { background: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px; text-align: center; color: #065F46; font-weight: 500; margin: 8px; border-radius: 12px; flex-shrink: 0; }
+    /* MAPA CORREGIDO: OCUPA EL ESPACIO QUE SOBRA, NUNCA SE CORTA */
+    #mapa { flex: 1; width: 100%; min-height: 350px; }
+    .mensaje { padding: 10px; text-align: center; display: none; font-weight: 500; border-radius: 8px; margin: 6px; flex-shrink: 0; }
     .bien { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
     .mal { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
     .aviso-conexion { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #F59E0B; color: white; padding: 8px 16px; border-radius: 8px; z-index: 9999; display: none; }
-    .acceso { max-width: 460px; margin: 25px auto; }
-    .acceso h2 { text-align: center; margin-bottom: 12px; color: #0F3460; font-weight: 600; }
-    .acceso p { text-align: center; margin-bottom: 18px; color: #64748B; font-size: 14px; }
+    .acceso { max-width: 460px; margin: 20px auto; flex-shrink: 0; }
+    .acceso h2 { text-align: center; margin-bottom: 10px; color: #0F3460; font-weight: 600; }
+    .acceso p { text-align: center; margin-bottom: 15px; color: #64748B; font-size: 14px; }
 
     /* PANEL DE ADMINISTRADOR COMPLETO */
-    .admin-barra { background: #0F3460; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .admin-contenido { max-width: 1100px; margin: 20px auto; padding: 15px; }
-    .admin-tarjeta { background: white; border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(15,52,96,0.08); }
-    .admin-fila { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #E2E8F0; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .admin-barra { background: #0F3460; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .admin-contenido { max-width: 1100px; margin: 15px auto; padding: 15px; overflow-y: auto; }
+    .admin-tarjeta { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(15,52,96,0.08); }
+    .admin-fila { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #E2E8F0; align-items: center; flex-wrap: wrap; gap: 8px; }
     .admin-fila:last-child { border-bottom: none; }
     .estado-activo { color: #10B981; font-weight: 600; }
     .estado-inactivo { color: #EF4444; font-weight: 600; }
@@ -152,7 +154,7 @@
 </div>
 
 <!-- ZONA PRINCIPAL DE USO -->
-<div class="oculto" id="zonaApp">
+<div class="oculto" id="zonaApp" style="display: flex; flex-direction: column; flex: 1;">
   <div class="paso">Paso 1: Selecciona el tipo de uso</div>
 
   <div class="panel" id="categorias">
@@ -170,8 +172,8 @@
 
   <div class="aviso-invite oculto" id="inviteBox">
     ✅ Grupo creado: <strong><span id="codMostrar"></span></strong>
-    <div class="panel" style="margin-top:10px; padding:8px;">
-      <input type="tel" id="numeroInvitar" placeholder="Número para invitar" style="min-width:230px;">
+    <div class="panel" style="margin-top:8px; padding:8px;">
+      <input type="tel" id="numeroInvitar" placeholder="Número para invitar" style="min-width:200px;">
       <button class="boton azul" onclick="enviarInvitacion()">📨 Enviar invitación</button>
     </div>
   </div>
@@ -212,6 +214,10 @@
 
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+  
+  // CORRECCIÓN IMPORTANTE: Avisar al mapa que cambió de tamaño cuando termine de cargar
+  setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 300);
+  window.addEventListener('resize', () => { if(mapa) mapa.invalidateSize(); });
 
   // --- AVISO DE CONEXIÓN ---
   window.addEventListener('offline', () => { document.getElementById('avisoConexion').style.display='block'; document.getElementById('avisoConexion').textContent='Sin conexión a internet'; });
@@ -236,7 +242,7 @@
   function mostrarRegistro() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formRegistro').classList.remove('oculto'); }
   function mostrarLogin() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formLogin').classList.remove('oculto'); }
   function volverAcceso() { document.getElementById('formRegistro').classList.add('oculto'); document.getElementById('formLogin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
-  function entrarSinCuenta() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('zonaApp').classList.remove('oculto'); }
+  function entrarSinCuenta() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('zonaApp').classList.remove('oculto'); setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 100); }
   function registrar() { mostrarMensaje("✅ Registro recibido — se habilitará tras confirmar pago", "bien"); setTimeout(entrarSinCuenta, 1500); }
   function ingresar() { mostrarMensaje("✅ Sesión iniciada — validando plan...", "bien"); setTimeout(entrarSinCuenta, 1000); }
 
@@ -249,7 +255,6 @@
       if(clave === "tu_clave_segura_aqui"){
         document.getElementById('pantallaAcceso').classList.add('oculto');
         document.getElementById('panelAdmin').classList.remove('oculto');
-        // Aquí se cargarán automáticamente los datos de la base
       } else alert("Clave incorrecta");
     }
     setTimeout(() => secuenciaAdmin = '', 2000);
@@ -261,6 +266,7 @@
     document.getElementById('categorias').classList.add('oculto');
     document.getElementById('formulario').classList.remove('oculto');
     document.getElementById('alertas'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.remove('oculto');
+    setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 100);
   }
 
   function activarUbicacion() {
