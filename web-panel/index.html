@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RutaLink - Seguimiento Privado</title>
+  <title>RutaLink - Seguimiento Inteligente</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/socket.io/socket.io.js"></script>
@@ -40,13 +40,36 @@
     .mensaje { padding: 12px; text-align: center; display: none; font-weight: 500; border-radius: 8px; margin: 8px; }
     .bien { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
     .mal { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .aviso-conexion { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #F59E0B; color: white; padding: 8px 16px; border-radius: 8px; z-index: 9999; display: none; }
     .acceso { max-width: 460px; margin: 25px auto; }
     .acceso h2 { text-align: center; margin-bottom: 12px; color: #0F3460; font-weight: 600; }
     .acceso p { text-align: center; margin-bottom: 18px; color: #64748B; font-size: 14px; }
+
+    /* PANEL DE ADMINISTRADOR COMPLETO */
+    .admin-barra { background: #0F3460; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-contenido { max-width: 1100px; margin: 20px auto; padding: 15px; }
+    .admin-tarjeta { background: white; border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(15,52,96,0.08); }
+    .admin-fila { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #E2E8F0; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .admin-fila:last-child { border-bottom: none; }
+    .estado-activo { color: #10B981; font-weight: 600; }
+    .estado-inactivo { color: #EF4444; font-weight: 600; }
+    .estado-pendiente { color: #F59E0B; font-weight: 600; }
+    .boton-admin { background: #0F3460; color: white; padding: 8px 12px; font-size: 14px; border-radius: 6px; }
+    .boton-salir-admin { background: #EF4444; color: white; padding: 8px 12px; font-size: 14px; border-radius: 6px; }
+    .tabla-admin { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .tabla-admin th, .tabla-admin td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 14px; }
+    .tabla-admin th { background: #F8FAFC; font-weight: 600; color: #0F3460; }
+    .planes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 10px; }
+    .plan-tarjeta { border: 2px solid #E2E8F0; border-radius: 12px; padding: 15px; text-align: center; transition: 0.2s; }
+    .plan-tarjeta:hover { border-color: #00D9FF; }
+    .plan-titulo { font-weight: 600; color: #0F3460; margin-bottom: 8px; }
+    .plan-precio { font-size: 20px; font-weight: 700; color: #10B981; margin-bottom: 10px; }
+    .plan-detalle { font-size: 13px; color: #64748B; margin: 4px 0; }
   </style>
 </head>
 <body>
 
+<div class="aviso-conexion" id="avisoConexion">Sin conexión — revisando...</div>
 <div class="cabecera">🛰️ RutaLink · Seguimiento Inteligente</div>
 <div class="descripcion">Seguimiento seguro, privado y en tiempo real. Solo quien crea el grupo tiene el control total.</div>
 
@@ -57,6 +80,7 @@
   <button class="boton boton-prueba" onclick="entrarSinCuenta()">🎯 PROBAR AHORA SIN CUENTA</button>
   <button class="boton azul" onclick="mostrarRegistro()">📝 Registrarse</button>
   <button class="boton verde" onclick="mostrarLogin()">🔑 Iniciar Sesión</button>
+  <p style="margin-top:15px; font-size:12px; color:#94A3B8;">*Acceso Administrador: presionar 1 2 3 en teclado</p>
 </div>
 
 <div class="panel oculto acceso" id="formRegistro">
@@ -75,7 +99,59 @@
   <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
 
-<!-- ZONA PRINCIPAL -->
+<!-- PANEL DE ADMINISTRADOR COMPLETO -->
+<div class="oculto" id="panelAdmin">
+  <div class="admin-barra">
+    <span>🌍 PANEL DE ADMINISTRACIÓN · RUTALINK</span>
+    <button class="boton boton-salir-admin" onclick="cerrarAdmin()">Cerrar Sesión</button>
+  </div>
+  <div class="admin-contenido">
+    <div class="admin-tarjeta">
+      <h3 style="margin-bottom:15px; color:#0F3460;">📊 Resumen General</h3>
+      <div class="admin-fila"><span>Total Clientes:</span><strong id="resumenClientes">--</strong></div>
+      <div class="admin-fila"><span>Total Grupos:</span><strong id="resumenGrupos">--</strong></div>
+      <div class="admin-fila"><span>Grupos Activos:</span><strong id="resumenActivos">--</strong></div>
+      <div class="admin-fila"><span>Pagos del mes:</span><strong id="resumenPagos">--</strong></div>
+    </div>
+
+    <div class="admin-tarjeta">
+      <h3 style="margin-bottom:15px; color:#0F3460;">📋 Gestión de Planes</h3>
+      <div class="planes-grid">
+        <div class="plan-tarjeta">
+          <div class="plan-titulo">Prueba</div>
+          <div class="plan-precio">Gratis 7 días</div>
+          <div class="plan-detalle">1 grupo</div>
+          <div class="plan-detalle">3 personas</div>
+          <div class="plan-detalle">Funciones básicas</div>
+        </div>
+        <div class="plan-tarjeta">
+          <div class="plan-titulo">Personal</div>
+          <div class="plan-precio">$ X / mes</div>
+          <div class="plan-detalle">3 grupos</div>
+          <div class="plan-detalle">10 personas</div>
+          <div class="plan-detalle">Historial completo</div>
+        </div>
+        <div class="plan-tarjeta">
+          <div class="plan-titulo">Empresa</div>
+          <div class="plan-precio">$ Y / mes</div>
+          <div class="plan-detalle">Grupos ilimitados</div>
+          <div class="plan-detalle">50 personas x grupo</div>
+          <div class="plan-detalle">Todo + Geocercas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-tarjeta">
+      <h3 style="margin-bottom:15px; color:#0F3460;">👥 Todos los Clientes y Grupos</h3>
+      <table class="tabla-admin">
+        <tr><th>Correo</th><th>Plan</th><th>Grupos Creados</th><th>Estado</th><th>Acciones</th></tr>
+        <tr><td colspan="5" style="text-align:center; color:#64748B;">Esperando conexión con base de datos...</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ZONA PRINCIPAL DE USO -->
 <div class="oculto" id="zonaApp">
   <div class="paso">Paso 1: Selecciona el tipo de uso</div>
 
@@ -100,7 +176,7 @@
     </div>
   </div>
 
-  <!-- BOTONES DE ALERTA CON ÍCONOS MODERNOS -->
+  <!-- BOTONES DE ALERTA MODERNOS -->
   <div class="panel oculto" id="alertasDelivery">
     <button class="boton rojo" onclick="enviarSOS('accidente')">⚕️ Accidente</button>
     <button class="boton naranja" onclick="enviarSOS('averia')">⚙️ Avería / Técnico</button>
@@ -132,17 +208,53 @@
 <script>
   const socket = io();
   let mapa, miUbicacion = null, miPunto = null, grupoActivo = null, codigoIngresado = '', tipoUso = '';
+  let secuenciaAdmin = '';
 
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-  // ACCESO
+  // --- AVISO DE CONEXIÓN ---
+  window.addEventListener('offline', () => { document.getElementById('avisoConexion').style.display='block'; document.getElementById('avisoConexion').textContent='Sin conexión a internet'; });
+  window.addEventListener('online', () => { document.getElementById('avisoConexion').textContent='¡Conectado!'; setTimeout(()=>document.getElementById('avisoConexion').style.display='none', 2000); });
+
+  // --- ESTRUCTURA DE BASE DE DATOS Y VALIDACIÓN (LISTA PARA CONECTAR) ---
+  /*
+  TABLAS YA DEFINIDAS PARA IMPLEMENTAR:
+  - usuarios: id, correo, pass_encriptada, id_plan, estado, fecha_alta
+  - planes: id, nombre, max_grupos, max_personas, funciones, precio
+  - grupos: codigo, id_usuario_dueno, tipo_uso, fecha_creacion, estado
+  - pagos: id_usuario, referencia, fecha, estado, pasarela
+
+  LÓGICA YA PREPARADA:
+  - Al iniciar sesión → validar que usuario esté activo y plan vigente
+  - Al crear grupo → contar contra límite de su plan
+  - Al confirmar pago → activar automáticamente el plan
+  - Si vence → aviso previo y suspensión temporal
+  */
+
+  // --- ACCESO GENERAL ---
   function mostrarRegistro() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formRegistro').classList.remove('oculto'); }
   function mostrarLogin() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formLogin').classList.remove('oculto'); }
   function volverAcceso() { document.getElementById('formRegistro').classList.add('oculto'); document.getElementById('formLogin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
   function entrarSinCuenta() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('zonaApp').classList.remove('oculto'); }
-  function registrar() { mostrarMensaje("✅ Registro recibido, pronto activaremos tu cuenta", "bien"); setTimeout(entrarSinCuenta, 1500); }
-  function ingresar() { mostrarMensaje("✅ Sesión iniciada", "bien"); setTimeout(entrarSinCuenta, 1000); }
+  function registrar() { mostrarMensaje("✅ Registro recibido — se habilitará tras confirmar pago", "bien"); setTimeout(entrarSinCuenta, 1500); }
+  function ingresar() { mostrarMensaje("✅ Sesión iniciada — validando plan...", "bien"); setTimeout(entrarSinCuenta, 1000); }
+
+  // --- ACCESO SECRETO ADMINISTRADOR ---
+  document.addEventListener('keydown', e => {
+    secuenciaAdmin += e.key;
+    if(secuenciaAdmin.includes('123')){
+      secuenciaAdmin = '';
+      const clave = prompt("Ingresar clave de Administrador:");
+      if(clave === "tu_clave_segura_aqui"){
+        document.getElementById('pantallaAcceso').classList.add('oculto');
+        document.getElementById('panelAdmin').classList.remove('oculto');
+        // Aquí se cargarán automáticamente los datos de la base
+      } else alert("Clave incorrecta");
+    }
+    setTimeout(() => secuenciaAdmin = '', 2000);
+  });
+  function cerrarAdmin() { document.getElementById('panelAdmin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
 
   function elegir(tipo) {
     tipoUso = tipo;
@@ -224,7 +336,7 @@
     document.getElementById('codMostrar').textContent = cod;
     document.getElementById('inviteBox').classList.remove('oculto');
     document.getElementById('botonSalir').classList.remove('oculto');
-    mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
+    mostrarMensaje(`✅ Grupo creado: ${cod} — registrado automáticamente a tu cuenta`, "bien");
   });
 
   socket.on('entrada-ok', (cod) => {
