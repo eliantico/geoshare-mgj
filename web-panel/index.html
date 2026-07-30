@@ -11,6 +11,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: #f5f7fa; }
     .cabecera { background: #1a73e8; color: white; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; }
+    .descripcion { text-align: center; padding: 12px 20px; color: #333; font-size: 15px; background: #e9ecef; }
     .paso { padding: 12px; text-align: center; font-weight: bold; background: #e9ecef; }
     .panel { background: white; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
     input { padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; min-width: 200px; }
@@ -25,32 +26,34 @@
     .gris { background: #6c757d; color: white; }
     .oculto { display: none !important; }
     .aviso-invite { background: #d1ecf1; padding: 10px; text-align: center; color: #0c5460; font-weight: bold; }
-    #mapa { width: 100%; height: calc(100vh - 200px); min-height: 500px; }
+    #mapa { width: 100%; height: calc(100vh - 260px); min-height: 500px; }
     .mensaje { padding: 10px; text-align: center; display: none; font-weight: bold; }
     .bien { background: #d4edda; color: #155724; }
     .mal { background: #f8d7da; color: #721c24; }
-    .acceso { max-width: 400px; margin: 30px auto; }
-    .acceso h2 { text-align: center; margin-bottom: 15px; color: #1a73e8; }
+    .acceso { max-width: 450px; margin: 20px auto; }
+    .acceso h2 { text-align: center; margin-bottom: 10px; color: #1a73e8; }
     .acceso p { text-align: center; margin-bottom: 15px; color: #555; }
+    .boton-prueba { background: #28a745; font-size: 17px; padding: 14px 25px; margin: 10px 0; }
   </style>
 </head>
 <body>
 
-<div class="cabecera">🛰️ RutaLink - Seguimiento Privado</div>
+<div class="cabecera">🛰️ RutaLink - Seguimiento Privado y Seguro</div>
+<div class="descripcion">Seguí a tus seres queridos, repartos o bienes con total privacidad. Solo quien crea el grupo tiene el control.</div>
 
-<!-- PANTALLA DE ACCESO -->
+<!-- PANTALLA DE ACCESO MEJORADA -->
 <div class="panel acceso" id="pantallaAcceso">
-  <h2>Bienvenido a RutaLink</h2>
-  <p>Las cuentas y registro son para usuarios con planes contratados</p>
+  <h2>¿Cómo querés empezar?</h2>
+  <p>Las cuentas y registro son para clientes con planes contratados</p>
+  <button class="boton boton-prueba" onclick="entrarSinCuenta()">🎯 PROBAR AHORA SIN CUENTA</button>
   <button class="boton azul" onclick="mostrarRegistro()">📝 Registrarse (Clientes)</button>
   <button class="boton verde" onclick="mostrarLogin()">🔑 Iniciar Sesión (Clientes)</button>
-  <button class="boton cat" onclick="entrarSinCuenta()">🎯 Prueba rápida sin cuenta</button>
 </div>
 
 <div class="panel oculto acceso" id="formRegistro">
-  <h2>Crear Cuenta</h2>
+  <h2>Crear Cuenta de Cliente</h2>
   <input type="email" id="regMail" placeholder="Tu correo electrónico">
-  <input type="password" id="regClave" placeholder="Crear contraseña">
+  <input type="password" id="regClave" placeholder="Crear contraseña segura">
   <button class="boton azul" onclick="registrar()">Registrarme</button>
   <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
@@ -63,7 +66,7 @@
   <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
 
-<!-- CONTENIDO PRINCIPAL -->
+<!-- ZONA PRINCIPAL - TODO LO QUE TENÍAMOS SIGUE AQUÍ -->
 <div class="oculto" id="zonaApp">
   <div class="paso">Paso 1: Elige tu tipo de uso</div>
 
@@ -142,11 +145,11 @@
     document.getElementById('zonaApp').classList.remove('oculto');
   }
   function registrar() {
-    mostrarMensaje("✅ Registro: pronto habilitaremos tu cuenta", "bien");
+    mostrarMensaje("✅ Recibido: pronto habilitaremos tu cuenta", "bien");
     setTimeout(() => entrarSinCuenta(), 1500);
   }
   function ingresar() {
-    mostrarMensaje("✅ Sesión iniciada", "bien");
+    mostrarMensaje("✅ Sesión iniciada correctamente", "bien");
     setTimeout(() => entrarSinCuenta(), 1000);
   }
 
@@ -187,7 +190,7 @@
   function enviarSOS(tipo) {
     if (!grupoActivo || !miUbicacion) return mostrarMensaje("Primero crea o entra a un grupo", "mal");
     socket.emit('sos', { grupo: grupoActivo, tipo: tipo, ...miUbicacion });
-    mostrarMensaje("Alerta enviada a todos", "bien");
+    mostrarMensaje("Alerta enviada a todos los integrantes", "bien");
   }
 
   function salirGrupo() {
@@ -202,17 +205,17 @@
   function enviarInvitacion() {
     const num = document.getElementById('numeroInvitar').value.trim();
     const cod = document.getElementById('codMostrar').textContent;
-    if (!num || !cod) return mostrarMensaje("Poné el número", "mal");
+    if (!num || !cod) return mostrarMensaje("Poné el número de teléfono", "mal");
     const texto = `🛰️ RutaLink: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
     window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, 'whatsapp_invite', 'width=500,height=700,top=50,left=50');
     setTimeout(() => window.focus(), 300);
-    mostrarMensaje("✅ Mensaje listo en WhatsApp", "bien");
+    mostrarMensaje("✅ Mensaje listo para enviar por WhatsApp", "bien");
   }
 
   document.getElementById('btnCrear').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
     codigoIngresado = document.getElementById('codigo').value.trim();
-    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
+    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos por favor", "mal");
     activarUbicacion();
     socket.emit('crear-grupo', { nombre: nom, grupo: codigoIngresado, tipo: tipoUso });
   });
@@ -220,7 +223,7 @@
   document.getElementById('btnEntrar').addEventListener('click', () => {
     const nom = document.getElementById('nombre').value.trim();
     codigoIngresado = document.getElementById('codigo').value.trim();
-    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
+    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos por favor", "mal");
     activarUbicacion();
     socket.emit('entrar-grupo', { nombre: nom, grupo: codigoIngresado });
   });
@@ -229,14 +232,12 @@
     grupoActivo = cod;
     document.getElementById('codMostrar').textContent = cod;
     document.getElementById('inviteBox').classList.remove('oculto');
-    // SOLO el creador ve el botón de salir
     document.getElementById('botonSalir').classList.remove('oculto');
-    mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
+    mostrarMensaje(`✅ Grupo creado correctamente: ${cod}`, "bien");
   });
 
   socket.on('entrada-ok', (cod) => {
     grupoActivo = cod;
-    // LOS INVITADOS NUNCA ven el botón de salir
     mostrarMensaje(`✅ Entraste al grupo: ${cod}`, "bien");
   });
 
@@ -248,17 +249,17 @@
   });
 
   socket.on('alerta-sos', (datos) => {
-    let texto = "🚨 ALERTA";
-    if(datos.tipo==='accidente') texto="🚑 ACCIDENTE";
+    let texto = "🚨 ALERTA RECIBIDA";
+    if(datos.tipo==='accidente') texto="🚑 ACCIDENTE REPORTADO";
     if(datos.tipo==='averia') texto="🔧 AVERÍA / TÉCNICO";
-    if(datos.tipo==='peligro') texto="⚠️ RIESGO / PELIGRO";
-    if(datos.tipo==='retraso') texto="⏱️ RETRASO";
-    if(datos.tipo==='llegue') texto="✅ LLEGÓ";
-    if(datos.tipo==='demoro') texto="⏳ SE DEMORARÁ";
+    if(datos.tipo==='peligro') texto="⚠️ RIESGO / ZONA PELIGROSA";
+    if(datos.tipo==='retraso') texto="⏱️ RETRASO EN EL RECORRIDO";
+    if(datos.tipo==='llegue') texto="✅ YA LLEGÓ AL DESTINO";
+    if(datos.tipo==='demoro') texto="⏳ SE DEMORARÁ UN POCO MÁS";
     
     mapa.setView([datos.lat, datos.lng], 16);
     L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
-    alert(texto + " RECIBIDA");
+    alert(texto);
   });
 
   function mostrarMensaje(texto, tipo) {
