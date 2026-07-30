@@ -12,7 +12,6 @@
     html, body { height: 100%; }
     body { background: #F0F4F8; color: #1A1A2E; display: flex; flex-direction: column; }
 
-    /* CABECERA MODERNA CON ADORNOS */
     .cabecera { background: #16213E; color: white; padding: 14px 18px; text-align: center; font-size: 20px; font-weight: 600; position: relative; flex-shrink: 0; }
     .cabecera::before { content: "🌍"; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
     .cabecera::after { content: "🛰️"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
@@ -37,7 +36,6 @@
 
     .oculto { display: none !important; }
     .aviso-invite { background: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px; text-align: center; color: #065F46; font-weight: 500; margin: 8px; border-radius: 12px; flex-shrink: 0; }
-    /* MAPA CORREGIDO: OCUPA EL ESPACIO QUE SOBRA, NUNCA SE CORTA */
     #mapa { flex: 1; width: 100%; min-height: 350px; }
     .mensaje { padding: 10px; text-align: center; display: none; font-weight: 500; border-radius: 8px; margin: 6px; flex-shrink: 0; }
     .bien { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
@@ -47,7 +45,6 @@
     .acceso h2 { text-align: center; margin-bottom: 10px; color: #0F3460; font-weight: 600; }
     .acceso p { text-align: center; margin-bottom: 15px; color: #64748B; font-size: 14px; }
 
-    /* PANEL DE ADMINISTRADOR COMPLETO */
     .admin-barra { background: #0F3460; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
     .admin-contenido { max-width: 1100px; margin: 15px auto; padding: 15px; overflow-y: auto; }
     .admin-tarjeta { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(15,52,96,0.08); }
@@ -73,35 +70,34 @@
 
 <div class="aviso-conexion" id="avisoConexion">Sin conexión — revisando...</div>
 <div class="cabecera">🛰️ RutaLink · Seguimiento Inteligente</div>
-<div class="descripcion">Seguimiento seguro, privado y en tiempo real. Solo quien crea el grupo tiene el control total.</div>
+<div class="descripcion">Seguimiento seguro, privado y en tiempo real. Venta exclusiva en zona: CABA y Gran Buenos Aires.</div>
 
-<!-- PANTALLA DE ACCESO -->
 <div class="panel acceso" id="pantallaAcceso">
   <h2>¿Cómo querés empezar?</h2>
-  <p>Las cuentas son exclusivas para clientes con planes contratados</p>
-  <button class="boton boton-prueba" onclick="entrarSinCuenta()">🎯 PROBAR AHORA SIN CUENTA</button>
-  <button class="boton azul" onclick="mostrarRegistro()">📝 Registrarse</button>
-  <button class="boton verde" onclick="mostrarLogin()">🔑 Iniciar Sesión</button>
-  <p style="margin-top:15px; font-size:12px; color:#94A3B8;">*Acceso Administrador: presionar 1 2 3 en teclado</p>
+  <p>Planes disponibles para uso personal, familias y empresas de logística</p>
+  <button class="boton boton-prueba" onclick="entrarSinCuenta()">🎯 PROBAR 7 DÍAS GRATIS</button>
+  <button class="boton azul" onclick="mostrarRegistro()">📝 Contratar Plan</button>
+  <button class="boton verde" onclick="mostrarLogin()">🔑 Mi Cuenta</button>
+  <p style="margin-top:15px; font-size:12px; color:#94A3B8;">*Acceso Administrador: presionar 1 2 3</p>
 </div>
 
 <div class="panel oculto acceso" id="formRegistro">
-  <h2>Crear Cuenta</h2>
+  <h2>Contratar Plan</h2>
   <input type="email" id="regMail" placeholder="Correo electrónico">
-  <input type="password" id="regClave" placeholder="Contraseña segura">
-  <button class="boton azul" onclick="registrar()">Confirmar Registro</button>
+  <input type="password" id="regClave" placeholder="Crear contraseña">
+  <p style="font-size:13px; color:#64748B; margin:8px 0;">Precios vigentes: Personal $1.200/mes | Empresa $3.500/mes</p>
+  <button class="boton azul" onclick="registrar()">Confirmar y Pagar</button>
   <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
 
 <div class="panel oculto acceso" id="formLogin">
-  <h2>Acceder a mi Cuenta</h2>
+  <h2>Ingresar a mi Cuenta</h2>
   <input type="email" id="logMail" placeholder="Tu correo">
   <input type="password" id="logClave" placeholder="Tu contraseña">
   <button class="boton verde" onclick="ingresar()">Ingresar</button>
   <button class="boton gris" onclick="volverAcceso()">Volver</button>
 </div>
 
-<!-- PANEL DE ADMINISTRADOR COMPLETO -->
 <div class="oculto" id="panelAdmin">
   <div class="admin-barra">
     <span>🌍 PANEL DE ADMINISTRACIÓN · RUTALINK</span>
@@ -113,47 +109,49 @@
       <div class="admin-fila"><span>Total Clientes:</span><strong id="resumenClientes">--</strong></div>
       <div class="admin-fila"><span>Total Grupos:</span><strong id="resumenGrupos">--</strong></div>
       <div class="admin-fila"><span>Grupos Activos:</span><strong id="resumenActivos">--</strong></div>
-      <div class="admin-fila"><span>Pagos del mes:</span><strong id="resumenPagos">--</strong></div>
+      <div class="admin-fila"><span>Ingresos del mes:</span><strong id="resumenPagos">--</strong></div>
     </div>
 
     <div class="admin-tarjeta">
-      <h3 style="margin-bottom:15px; color:#0F3460;">📋 Gestión de Planes</h3>
+      <h3 style="margin-bottom:15px; color:#0F3460;">💳 Planes y Precios Definidos</h3>
       <div class="planes-grid">
         <div class="plan-tarjeta">
           <div class="plan-titulo">Prueba</div>
-          <div class="plan-precio">Gratis 7 días</div>
+          <div class="plan-precio">GRATIS 7 DÍAS</div>
           <div class="plan-detalle">1 grupo</div>
-          <div class="plan-detalle">3 personas</div>
+          <div class="plan-detalle">3 personas máximo</div>
           <div class="plan-detalle">Funciones básicas</div>
+          <div class="plan-detalle">Sin anuncios</div>
         </div>
         <div class="plan-tarjeta">
-          <div class="plan-titulo">Personal</div>
-          <div class="plan-precio">$ X / mes</div>
+          <div class="plan-titulo">Personal / Familia</div>
+          <div class="plan-precio">$ 1.200 / mes</div>
           <div class="plan-detalle">3 grupos</div>
-          <div class="plan-detalle">10 personas</div>
+          <div class="plan-detalle">10 personas por grupo</div>
           <div class="plan-detalle">Historial completo</div>
+          <div class="plan-detalle">Sin anuncios</div>
         </div>
         <div class="plan-tarjeta">
-          <div class="plan-titulo">Empresa</div>
-          <div class="plan-precio">$ Y / mes</div>
+          <div class="plan-titulo">Empresa / Delivery</div>
+          <div class="plan-precio">$ 3.500 / mes</div>
           <div class="plan-detalle">Grupos ilimitados</div>
-          <div class="plan-detalle">50 personas x grupo</div>
-          <div class="plan-detalle">Todo + Geocercas</div>
+          <div class="plan-detalle">50 personas por grupo</div>
+          <div class="plan-detalle">Geocercas y alertas</div>
+          <div class="plan-detalle">Soporte directo</div>
         </div>
       </div>
     </div>
 
     <div class="admin-tarjeta">
-      <h3 style="margin-bottom:15px; color:#0F3460;">👥 Todos los Clientes y Grupos</h3>
+      <h3 style="margin-bottom:15px; color:#0F3460;">👥 Gestión de Clientes</h3>
       <table class="tabla-admin">
-        <tr><th>Correo</th><th>Plan</th><th>Grupos Creados</th><th>Estado</th><th>Acciones</th></tr>
-        <tr><td colspan="5" style="text-align:center; color:#64748B;">Esperando conexión con base de datos...</td></tr>
+        <tr><th>Correo</th><th>Plan</th><th>Grupos</th><th>Zona</th><th>Estado</th><th>Acciones</th></tr>
+        <tr><td colspan="6" style="text-align:center; color:#64748B;">Esperando conexión...</td></tr>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ZONA PRINCIPAL DE USO -->
 <div class="oculto" id="zonaApp" style="display: flex; flex-direction: column; flex: 1;">
   <div class="paso">Paso 1: Selecciona el tipo de uso</div>
 
@@ -178,7 +176,6 @@
     </div>
   </div>
 
-  <!-- BOTONES DE ALERTA MODERNOS -->
   <div class="panel oculto" id="alertasDelivery">
     <button class="boton rojo" onclick="enviarSOS('accidente')">⚕️ Accidente</button>
     <button class="boton naranja" onclick="enviarSOS('averia')">⚙️ Avería / Técnico</button>
@@ -215,44 +212,27 @@
   mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
   
-  // CORRECCIÓN IMPORTANTE: Avisar al mapa que cambió de tamaño cuando termine de cargar
   setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 300);
   window.addEventListener('resize', () => { if(mapa) mapa.invalidateSize(); });
 
-  // --- AVISO DE CONEXIÓN ---
   window.addEventListener('offline', () => { document.getElementById('avisoConexion').style.display='block'; document.getElementById('avisoConexion').textContent='Sin conexión a internet'; });
   window.addEventListener('online', () => { document.getElementById('avisoConexion').textContent='¡Conectado!'; setTimeout(()=>document.getElementById('avisoConexion').style.display='none', 2000); });
 
-  // --- ESTRUCTURA DE BASE DE DATOS Y VALIDACIÓN (LISTA PARA CONECTAR) ---
-  /*
-  TABLAS YA DEFINIDAS PARA IMPLEMENTAR:
-  - usuarios: id, correo, pass_encriptada, id_plan, estado, fecha_alta
-  - planes: id, nombre, max_grupos, max_personas, funciones, precio
-  - grupos: codigo, id_usuario_dueno, tipo_uso, fecha_creacion, estado
-  - pagos: id_usuario, referencia, fecha, estado, pasarela
-
-  LÓGICA YA PREPARADA:
-  - Al iniciar sesión → validar que usuario esté activo y plan vigente
-  - Al crear grupo → contar contra límite de su plan
-  - Al confirmar pago → activar automáticamente el plan
-  - Si vence → aviso previo y suspensión temporal
-  */
-
-  // --- ACCESO GENERAL ---
   function mostrarRegistro() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formRegistro').classList.remove('oculto'); }
   function mostrarLogin() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formLogin').classList.remove('oculto'); }
   function volverAcceso() { document.getElementById('formRegistro').classList.add('oculto'); document.getElementById('formLogin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
   function entrarSinCuenta() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('zonaApp').classList.remove('oculto'); setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 100); }
-  function registrar() { mostrarMensaje("✅ Registro recibido — se habilitará tras confirmar pago", "bien"); setTimeout(entrarSinCuenta, 1500); }
-  function ingresar() { mostrarMensaje("✅ Sesión iniciada — validando plan...", "bien"); setTimeout(entrarSinCuenta, 1000); }
+  function registrar() { mostrarMensaje("✅ Solicitud recibida — te contactaremos para confirmar el pago", "bien"); setTimeout(entrarSinCuenta, 1500); }
+  function ingresar() { mostrarMensaje("✅ Sesión iniciada", "bien"); setTimeout(entrarSinCuenta, 1000); }
 
-  // --- ACCESO SECRETO ADMINISTRADOR ---
+  // 🛑 CAMBIÁ AQUÍ TU CLAVE DE ADMINISTRADOR
   document.addEventListener('keydown', e => {
     secuenciaAdmin += e.key;
     if(secuenciaAdmin.includes('123')){
       secuenciaAdmin = '';
       const clave = prompt("Ingresar clave de Administrador:");
-      if(clave === "tu_clave_segura_aqui"){
+      // PONÉ TU CLAVE EN LUGAR DE "MGJ2026"
+      if(clave === "MGJ2026"){
         document.getElementById('pantallaAcceso').classList.add('oculto');
         document.getElementById('panelAdmin').classList.remove('oculto');
       } else alert("Clave incorrecta");
@@ -342,7 +322,7 @@
     document.getElementById('codMostrar').textContent = cod;
     document.getElementById('inviteBox').classList.remove('oculto');
     document.getElementById('botonSalir').classList.remove('oculto');
-    mostrarMensaje(`✅ Grupo creado: ${cod} — registrado automáticamente a tu cuenta`, "bien");
+    mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
   });
 
   socket.on('entrada-ok', (cod) => {
