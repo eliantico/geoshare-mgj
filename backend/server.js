@@ -12,7 +12,7 @@ const io = socketIo(servidor);
 // 🔑 CONFIGURACIÓN DE MERCADO PAGO
 // --------------------------
 mercadopago.configure({
-  access_token: 'PEGÁ_TU_TOKEN_PRIVADO_DE_MERCADO_PAGO_AQUI'
+  access_token: TEST-2527381505108973-091620-197037de95319cbe9141ba4430e4cd01-352269539
 });
 
 // Servir archivos de la web
