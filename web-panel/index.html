@@ -18,33 +18,30 @@
         /* CONTENEDOR GENERAL */
         .contenedor { max-width: 480px; margin: 0 auto; padding: 12px; }
         
-        /* CAJA DE REGISTRO */
+        /* PANTALLA DE INICIO */
+        .inicio { text-align: center; padding: 30px 15px; }
+        .inicio h2 { font-size: 24px; color: #1e40af; margin-bottom: 10px; }
+        .inicio p { font-size: 14px; color: #4b5563; margin-bottom: 25px; }
+        .btn-inicio { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-azul { background: #2563eb; color: white; }
+        .btn-verde { background: #16a34a; color: white; }
+        .btn-claro { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        button:hover { opacity: 0.93; transform: translateY(-1px); }
+        
+        /* CAJA GENERAL */
         .caja { background: white; border-radius: 14px; padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
         .caja h2 { font-size: 17px; margin-bottom: 14px; color: #1e40af; }
         input { width: 100%; padding: 12px; margin: 6px 0 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
         button { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { opacity: 0.92; transform: translateY(-1px); }
-        
-        /* BOTONES PRINCIPALES */
-        .btn-azul { background: #2563eb; color: white; width: 100%; margin-top: 6px; }
-        .btn-gris { background: #6b7280; color: white; width: 100%; margin-top: 8px; }
         
         /* TIPOS DE USO */
         .fila-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
         .btn-uso { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 14px; }
-        .btn-uso.seleccionado { background: #dbeafe; border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
         .btn-seguridad { grid-column: 1 / -1; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .mensaje-pago { padding: 10px; border-radius: 8px; background: #fef3c7; color: #92400e; margin: 12px 0; font-size: 14px; }
         
-        /* MENSAJE DE ESTADO */
-        .mensaje { padding: 10px 14px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
-        .mensaje-exito { background: #f0fdf4; color: #166534; border-left: 4px solid #22c55e; }
-        .mensaje-aviso { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
-        
-        /* GRUPO E INVITACIÓN */
+        /* GRUPO Y ALERTAS */
         .grupo-codigo { font-size: 22px; font-weight: bold; color: #1e40af; text-align: center; padding: 10px; background: #eff6ff; border-radius: 8px; margin: 8px 0; }
-        .btn-azul-claro { background: #3b82f6; color: white; width: 100%; margin: 8px 0; }
-        
-        /* ALERTAS */
         .fila-alertas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
         .btn-peligro { background: #dc2626; color: white; }
         .btn-llegue { background: #16a34a; color: white; }
@@ -53,8 +50,6 @@
         
         /* MAPA */
         #mapa { height: 380px; border-radius: 12px; margin-top: 12px; z-index: 1; }
-        
-        /* OCULTAR SECCIONES */
         .oculto { display: none !important; }
     </style>
 </head>
@@ -62,22 +57,40 @@
 
 <!-- CABECERA -->
 <div class="header">
-    <h1>🌐 RutaLink · Seguimiento Inteligente</h1>
+    <h1>🛰️ RutaLink · Seguimiento Inteligente</h1>
     <p class="subtitulo">Seguimiento seguro, privado y en tiempo real. Solo quien crea el grupo tiene el control total.</p>
 </div>
 
 <div class="contenedor">
 
-    <!-- SECCIÓN 1: REGISTRO DE CUENTA -->
-    <div id="seccion-registro" class="caja">
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantalla-inicio" class="inicio">
+        <h2>Bienvenido a RutaLink</h2>
+        <p>Las cuentas y registro son para usuarios con planes contratados</p>
+        <button class="btn-inicio btn-azul" onclick="mostrarRegistro()">📝 Registrarse (Clientes)</button>
+        <button class="btn-inicio btn-verde" onclick="mostrarLogin()">🔑 Iniciar Sesión (Clientes)</button>
+        <button class="btn-inicio btn-claro" onclick="irPrueba()">🎯 Prueba rápida sin cuenta</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="seccion-registro" class="caja oculto">
         <h2>🔐 Crear Cuenta</h2>
         <input type="email" id="correo" placeholder="tu@email.com">
         <input type="password" id="clave" placeholder="Crear contraseña">
         <button class="btn-azul" onclick="registrar()">Confirmar Registro</button>
-        <button class="btn-gris" onclick="volverInicio()">Volver</button>
+        <button class="btn-salir" onclick="volverInicio()">Volver</button>
     </div>
 
-    <!-- SECCIÓN 2: TIPO DE USO -->
+    <!-- INICIO DE SESIÓN -->
+    <div id="seccion-login" class="caja oculto">
+        <h2>🔑 Iniciar Sesión</h2>
+        <input type="email" id="correo-login" placeholder="Tu correo">
+        <input type="password" id="clave-login" placeholder="Tu contraseña">
+        <button class="btn-verde" onclick="ingresar()">Ingresar</button>
+        <button class="btn-salir" onclick="volverInicio()">Volver</button>
+    </div>
+
+    <!-- TIPO DE USO -->
     <div id="seccion-tipo-uso" class="caja oculto">
         <h2>Paso 1: Selecciona el tipo de uso</h2>
         <div class="fila-botones">
@@ -85,15 +98,15 @@
             <button class="btn-uso" onclick="elegirTipo('familia')">👨‍👩‍👧‍👦 Familia / Cuidado</button>
         </div>
         <button class="btn-uso btn-seguridad" onclick="elegirTipo('seguridad')">🛡️ Seguridad / General</button>
-        <div id="mensaje-pago" class="mensaje mensaje-aviso oculto">✅ Registro recibido — se habilitará tras confirmar pago</div>
+        <div class="mensaje-pago">✅ Registro recibido — se habilitará tras confirmar pago</div>
     </div>
 
-    <!-- SECCIÓN 3: GRUPO Y MAPA -->
+    <!-- GRUPO Y MAPA -->
     <div id="seccion-grupo" class="caja oculto">
         <input type="text" id="codigo-grupo" placeholder="Tu código o Código del grupo">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
             <button class="btn-azul" onclick="crearGrupo()">Crear Grupo</button>
-            <button class="btn-azul-claro" onclick="entrarGrupo()">Entrar al Grupo</button>
+            <button class="btn-verde" onclick="entrarGrupo()">Entrar al Grupo</button>
         </div>
 
         <div id="codigo-creado" class="oculto">
@@ -110,158 +123,104 @@
         <button class="btn-salir" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
     </div>
 
-    <!-- EL MAPA -->
+    <!-- MAPA -->
     <div id="mapa"></div>
 
 </div>
 
 <script>
-    // VARIABLES GLOBALES
-    let mapa;
-    let miUbicacion = null;
-    let marcadores = {};
-    let codigoGrupoActual = null;
-    let tipoUsuario = null;
-    let usuarioRegistrado = false;
+    let mapa, miUbicacion = null, marcadores = {}, codigoGrupoActual = null;
 
-    // INICIAR MAPA
+    // INICIAR MAPA Y UBICACIÓN
     function iniciarMapa() {
         mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(mapa);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapa);
         pedirUbicacion();
     }
 
     function pedirUbicacion() {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(
-            posicion => {
-                miUbicacion = [posicion.coords.latitude, posicion.coords.longitude];
-                mapa.setView(miUbicacion, 14);
-                if (!marcadores['yo']) {
-                    marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
-                        className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold; white-space:nowrap;">Tú 📍</div>', offset: [40, -5]
-                    })}).addTo(mapa);
-                } else {
-                    marcadores['yo'].setLatLng(miUbicacion);
-                }
-                enviarUbicacionServidor(miUbicacion);
-            },
-            error => {
-                console.log("Error ubicación:", error.message);
-                alert("No se pudo obtener ubicación: revisá permisos o señal GPS");
-            },
-            { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
-        );
-    } else {
-        alert("Tu navegador no admite ubicación");
-    }
-}
-
-    // SIMULAR ENVÍO AL SERVIDOR
-    function enviarUbicacionServidor(coords) {
-        console.log("Enviando ubicación:", coords, "Grupo:", codigoGrupoActual);
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                pos => {
+                    miUbicacion = [pos.coords.latitude, pos.coords.longitude];
+                    mapa.setView(miUbicacion, 14);
+                    if (!marcadores['yo']) {
+                        marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
+                            className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold;">Tú 📍</div>', offset: [40,-5]
+                        })}).addTo(mapa);
+                    } else marcadores['yo'].setLatLng(miUbicacion);
+                },
+                err => alert("Permití la ubicación en el candadito 🔒 de la barra de direcciones"),
+                { enableHighAccuracy: true }
+            );
+        }
     }
 
-    // 1. REGISTRAR CUENTA
+    // NAVEGACIÓN ENTRE PANTALLAS
+    function mostrarRegistro() { ocultarTodo(); document.getElementById('seccion-registro').classList.remove('oculto'); }
+    function mostrarLogin() { ocultarTodo(); document.getElementById('seccion-login').classList.remove('oculto'); }
+    function irPrueba() { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa(); }
+    function volverInicio() { ocultarTodo(); document.getElementById('pantalla-inicio').classList.remove('oculto'); }
+    function ocultarTodo() {
+        document.querySelectorAll('.caja, .inicio').forEach(el => el.classList.add('oculto'));
+    }
+
+    // FUNCIONES
     function registrar() {
-        const correo = document.getElementById('correo').value.trim();
-        const clave = document.getElementById('clave').value.trim();
-        if (!correo || !clave) return alert("Completá correo y contraseña");
-        
-        // Simula registro y pago pendiente
-        usuarioRegistrado = true;
-        document.getElementById('seccion-registro').classList.add('oculto');
-        document.getElementById('seccion-tipo-uso').classList.remove('oculto');
+        const corr = document.getElementById('correo').value;
+        const clav = document.getElementById('clave').value;
+        if (!corr || !clav) return alert("Completá todos los datos");
+        ocultarTodo(); document.getElementById('seccion-tipo-uso').classList.remove('oculto');
     }
-
-    // VOLVER AL INICIO
-    function volverInicio() {
-        document.getElementById('seccion-registro').classList.remove('oculto');
-        document.getElementById('seccion-tipo-uso').classList.add('oculto');
-        document.getElementById('seccion-grupo').classList.add('oculto');
+    function ingresar() {
+        const corr = document.getElementById('correo-login').value;
+        const clav = document.getElementById('clave-login').value;
+        if (!corr || !clav) return alert("Completá todos los datos");
+        ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa();
     }
-
-    // 2. ELEGIR TIPO DE USO
     function elegirTipo(tipo) {
-        tipoUsuario = tipo;
-        document.querySelectorAll('.btn-uso').forEach(b => b.classList.remove('seleccionado'));
-        event.target.classList.add('seleccionado');
-        document.getElementById('mensaje-pago').classList.remove('oculto');
-        
-        setTimeout(() => {
-            document.getElementById('seccion-tipo-uso').classList.add('oculto');
-            document.getElementById('seccion-grupo').classList.remove('oculto');
-        }, 1500);
+        setTimeout(() => { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa(); }, 1200);
     }
-
-    // 3. CREAR GRUPO
     function crearGrupo() {
         codigoGrupoActual = Math.floor(Math.random() * 90000 + 10000).toString();
         document.getElementById('codigo-mostrado').textContent = codigoGrupoActual;
         document.getElementById('codigo-creado').classList.remove('oculto');
         document.getElementById('codigo-grupo').value = codigoGrupoActual;
-        alert("✅ Grupo creado. Código: " + codigoGrupoActual + "\nCompartí este código con quien quieras que te vea.");
+        alert("✅ Grupo creado: " + codigoGrupoActual + "\nCompartí este código");
     }
-
-    // 4. ENTRAR A GRUPO
     function entrarGrupo() {
         const cod = document.getElementById('codigo-grupo').value.trim();
-        if (!cod) return alert("Escribí el código del grupo");
+        if (!cod) return alert("Escribí el código");
         codigoGrupoActual = cod;
-        alert("✅ Entraste al grupo: " + cod + "\nTu ubicación se compartirá con el creador.");
+        alert("✅ Entraste al grupo: " + cod);
     }
-
-    // 5. ENVIAR INVITACIÓN
     function enviarInvitacion() {
         const num = document.getElementById('numero-invitado').value.trim();
         if (!num) return alert("Escribí el número");
         const enlace = window.location.href + "?grupo=" + codigoGrupoActual;
-        const mensaje = "¡Hola! Te invito a seguirme en RutaLink 🔗\nCódigo: " + codigoGrupoActual + "\nEntrá acá: " + enlace;
-        window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(mensaje), "_blank");
+        const msj = encodeURIComponent("Te invito a RutaLink 🛰️\nCódigo: " + codigoGrupoActual + "\nEntrá acá: " + enlace);
+        window.open("https://wa.me/" + num + "?text=" + msj, "_blank");
     }
-
-    // 6. ENVIAR ALERTA
     function enviarAlerta(tipo) {
         if (!codigoGrupoActual) return alert("Creá o entrá a un grupo primero");
-        let texto = "";
-        switch(tipo) {
-            case "peligro": texto = "🚨 ¡ALERTA DE PELIGRO! Necesito ayuda urgente."; break;
-            case "llegue": texto = "✅ Ya llegué a destino."; break;
-            case "demoro": texto = "⏳ Me demoro un poco más, no me esperen."; break;
-        }
-        alert(texto + "\n✅ Enviado al grupo " + codigoGrupoActual);
+        let txt = tipo=="peligro" ? "🚨 ¡ALERTA DE PELIGRO!" : tipo=="llegue" ? "✅ Ya llegué" : "⏳ Me demoro más";
+        alert(txt + "\n✅ Enviado al grupo");
     }
-
-    // 7. SALIR DEL GRUPO
     function salirGrupo() {
-        if (confirm("¿Cerrar sesión y salir del grupo?")) {
+        if (confirm("¿Cerrar y dejar de compartir ubicación?")) {
             codigoGrupoActual = null;
-            document.getElementById('codigo-creado').classList.add('oculto');
-            document.getElementById('codigo-grupo').value = "";
-            alert("✅ Desconectado. Tu ubicación dejó de compartirse.");
+            volverInicio();
         }
     }
 
-    // DETECTAR CÓDIGO DESDE ENLACE
-    function leerEnlace() {
-        const params = new URLSearchParams(window.location.search);
-        const cod = params.get('grupo');
+    // LEER CÓDIGO DESDE ENLACE
+    window.onload = () => {
+        const p = new URLSearchParams(window.location.search);
+        const cod = p.get('grupo');
         if (cod) {
             document.getElementById('codigo-grupo').value = cod;
-            document.getElementById('seccion-registro').classList.add('oculto');
-            document.getElementById('seccion-tipo-uso').classList.add('oculto');
-            document.getElementById('seccion-grupo').classList.remove('oculto');
-            codigoGrupoActual = cod;
-            setTimeout(() => entrarGrupo(), 800);
+            irPrueba(); setTimeout(() => entrarGrupo(), 500);
         }
-    }
-
-    // INICIAR TODO AL CARGAR
-    window.onload = () => {
-        iniciarMapa();
-        leerEnlace();
     };
 </script>
 </body>
