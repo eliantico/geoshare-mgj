@@ -133,27 +133,31 @@
         pedirUbicacion();
     }
 
-    // PEDIR UBICACIÓN REAL
     function pedirUbicacion() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(
-                posicion => {
-                    miUbicacion = [posicion.coords.latitude, posicion.coords.longitude];
-                    mapa.setView(miUbicacion, 14);
-                    if (!marcadores['yo']) {
-                        marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
-                            className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold; white-space:nowrap;">Tú 📍</div>', offset: [40, -5]
-                        })}).addTo(mapa);
-                    } else {
-                        marcadores['yo'].setLatLng(miUbicacion);
-                    }
-                    enviarUbicacionServidor(miUbicacion);
-                },
-                error => console.log("No se pudo obtener ubicación"),
-                { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
-            );
-        }
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            posicion => {
+                miUbicacion = [posicion.coords.latitude, posicion.coords.longitude];
+                mapa.setView(miUbicacion, 14);
+                if (!marcadores['yo']) {
+                    marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
+                        className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold; white-space:nowrap;">Tú 📍</div>', offset: [40, -5]
+                    })}).addTo(mapa);
+                } else {
+                    marcadores['yo'].setLatLng(miUbicacion);
+                }
+                enviarUbicacionServidor(miUbicacion);
+            },
+            error => {
+                console.log("Error ubicación:", error.message);
+                alert("No se pudo obtener ubicación: revisá permisos o señal GPS");
+            },
+            { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
+        );
+    } else {
+        alert("Tu navegador no admite ubicación");
     }
+}
 
     // SIMULAR ENVÍO AL SERVIDOR
     function enviarUbicacionServidor(coords) {
