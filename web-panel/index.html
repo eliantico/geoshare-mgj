@@ -1,363 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RutaLink - Seguimiento Inteligente</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
-    html, body { height: 100%; }
-    body { background: #F0F4F8; color: #1A1A2E; display: flex; flex-direction: column; }
-
-    .cabecera { background: #16213E; color: white; padding: 14px 18px; text-align: center; font-size: 20px; font-weight: 600; position: relative; flex-shrink: 0; }
-    .cabecera::before { content: "🌍"; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
-    .cabecera::after { content: "🛰️"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 22px; opacity: 0.9; }
-    .descripcion { text-align: center; padding: 10px 15px; color: #64748B; font-size: 14px; background: white; border-bottom: 1px solid #E2E8F0; flex-shrink: 0; }
-
-    .paso { padding: 10px; text-align: center; font-weight: 600; color: #16213E; background: white; flex-shrink: 0; }
-    .panel { background: white; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; border-radius: 12px; margin: 8px; box-shadow: 0 4px 12px rgba(15, 52, 96, 0.06); flex-shrink: 0; }
-    input { padding: 10px 12px; font-size: 15px; border: 1px solid #CBD5E1; border-radius: 8px; min-width: 190px; transition: 0.2s; }
-    input:focus { outline: none; border-color: #00D9FF; box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.15); }
-
-    .boton { padding: 10px 18px; font-size: 15px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
-    .boton:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15, 52, 96, 0.12); }
-    .cat { background: #E8F3FF; color: #0F3460; border: 1px solid #BFDBFE; }
-    .cat:hover { background: #DBEAFE; }
-    .azul { background: #0F3460; color: white; }
-    .verde { background: #10B981; color: white; }
-    .rojo { background: #EF4444; color: white; }
-    .naranja { background: #F97316; color: white; }
-    .amarillo { background: #F59E0B; color: #1E293B; }
-    .gris { background: #64748B; color: white; }
-    .boton-prueba { background: #10B981; font-size: 16px; padding: 12px 24px; margin: 10px 0; font-weight: 600; }
-
-    .oculto { display: none !important; }
-    .aviso-invite { background: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px; text-align: center; color: #065F46; font-weight: 500; margin: 8px; border-radius: 12px; flex-shrink: 0; }
-    #mapa { flex: 1; width: 100%; min-height: 350px; }
-    .mensaje { padding: 10px; text-align: center; display: none; font-weight: 500; border-radius: 8px; margin: 6px; flex-shrink: 0; }
-    .bien { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
-    .mal { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
-    .aviso-conexion { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #F59E0B; color: white; padding: 8px 16px; border-radius: 8px; z-index: 9999; display: none; }
-    .acceso { max-width: 460px; margin: 20px auto; flex-shrink: 0; }
-    .acceso h2 { text-align: center; margin-bottom: 10px; color: #0F3460; font-weight: 600; }
-    .acceso p { text-align: center; margin-bottom: 15px; color: #64748B; font-size: 14px; }
-
-    .admin-barra { background: #0F3460; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-    .admin-contenido { max-width: 1100px; margin: 15px auto; padding: 15px; overflow-y: auto; }
-    .admin-tarjeta { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(15,52,96,0.08); }
-    .admin-fila { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #E2E8F0; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .admin-fila:last-child { border-bottom: none; }
-    .estado-activo { color: #10B981; font-weight: 600; }
-    .estado-inactivo { color: #EF4444; font-weight: 600; }
-    .estado-pendiente { color: #F59E0B; font-weight: 600; }
-    .boton-admin { background: #0F3460; color: white; padding: 8px 12px; font-size: 14px; border-radius: 6px; }
-    .boton-salir-admin { background: #EF4444; color: white; padding: 8px 12px; font-size: 14px; border-radius: 6px; }
-    .tabla-admin { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .tabla-admin th, .tabla-admin td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 14px; }
-    .tabla-admin th { background: #F8FAFC; font-weight: 600; color: #0F3460; }
-    .planes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 10px; }
-    .plan-tarjeta { border: 2px solid #E2E8F0; border-radius: 12px; padding: 15px; text-align: center; transition: 0.2s; }
-    .plan-tarjeta:hover { border-color: #00D9FF; }
-    .plan-titulo { font-weight: 600; color: #0F3460; margin-bottom: 8px; }
-    .plan-precio { font-size: 20px; font-weight: 700; color: #10B981; margin-bottom: 10px; }
-    .plan-detalle { font-size: 13px; color: #64748B; margin: 4px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RutaLink - Seguimiento Inteligente</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f4f8; color: #1a202c; }
+        
+        /* CABECERA */
+        .header { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 16px; text-align: center; }
+        .header h1 { font-size: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .subtitulo { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+        
+        /* CONTENEDOR GENERAL */
+        .contenedor { max-width: 480px; margin: 0 auto; padding: 12px; }
+        
+        /* CAJA DE REGISTRO */
+        .caja { background: white; border-radius: 14px; padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .caja h2 { font-size: 17px; margin-bottom: 14px; color: #1e40af; }
+        input { width: 100%; padding: 12px; margin: 6px 0 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+        button { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.92; transform: translateY(-1px); }
+        
+        /* BOTONES PRINCIPALES */
+        .btn-azul { background: #2563eb; color: white; width: 100%; margin-top: 6px; }
+        .btn-gris { background: #6b7280; color: white; width: 100%; margin-top: 8px; }
+        
+        /* TIPOS DE USO */
+        .fila-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .btn-uso { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 14px; }
+        .btn-uso.seleccionado { background: #dbeafe; border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
+        .btn-seguridad { grid-column: 1 / -1; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        
+        /* MENSAJE DE ESTADO */
+        .mensaje { padding: 10px 14px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+        .mensaje-exito { background: #f0fdf4; color: #166534; border-left: 4px solid #22c55e; }
+        .mensaje-aviso { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        
+        /* GRUPO E INVITACIÓN */
+        .grupo-codigo { font-size: 22px; font-weight: bold; color: #1e40af; text-align: center; padding: 10px; background: #eff6ff; border-radius: 8px; margin: 8px 0; }
+        .btn-azul-claro { background: #3b82f6; color: white; width: 100%; margin: 8px 0; }
+        
+        /* ALERTAS */
+        .fila-alertas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .btn-peligro { background: #dc2626; color: white; }
+        .btn-llegue { background: #16a34a; color: white; }
+        .btn-demoro { background: #f59e0b; color: #1f2937; grid-column: 1 / -1; margin-top: 8px; }
+        .btn-salir { background: #4b5563; color: white; width: 100%; margin-top: 12px; }
+        
+        /* MAPA */
+        #mapa { height: 380px; border-radius: 12px; margin-top: 12px; z-index: 1; }
+        
+        /* OCULTAR SECCIONES */
+        .oculto { display: none !important; }
+    </style>
 </head>
 <body>
 
-<div class="aviso-conexion" id="avisoConexion">Sin conexión — revisando...</div>
-<div class="cabecera">🛰️ RutaLink · Seguimiento Inteligente</div>
-<div class="descripcion">Seguimiento seguro, privado y en tiempo real. Venta exclusiva en zona: CABA y Gran Buenos Aires.</div>
-
-<div class="panel acceso" id="pantallaAcceso">
-  <h2>¿Cómo querés empezar?</h2>
-  <p>Planes disponibles para uso personal, familias y empresas de logística</p>
-  <button class="boton boton-prueba" onclick="entrarSinCuenta()">🎯 PROBAR 7 DÍAS GRATIS</button>
-  <button class="boton azul" onclick="mostrarRegistro()">📝 Contratar Plan</button>
-  <button class="boton verde" onclick="mostrarLogin()">🔑 Mi Cuenta</button>
-  <p style="margin-top:15px; font-size:12px; color:#94A3B8;">*Acceso Administrador: presionar 1 2 3</p>
+<!-- CABECERA -->
+<div class="header">
+    <h1>🌐 RutaLink · Seguimiento Inteligente</h1>
+    <p class="subtitulo">Seguimiento seguro, privado y en tiempo real. Solo quien crea el grupo tiene el control total.</p>
 </div>
 
-<div class="panel oculto acceso" id="formRegistro">
-  <h2>Contratar Plan</h2>
-  <input type="email" id="regMail" placeholder="Correo electrónico">
-  <input type="password" id="regClave" placeholder="Crear contraseña">
-  <p style="font-size:13px; color:#64748B; margin:8px 0;">Precios vigentes: Personal $1.200/mes | Empresa $3.500/mes</p>
-  <button class="boton azul" onclick="registrar()">Confirmar y Pagar</button>
-  <button class="boton gris" onclick="volverAcceso()">Volver</button>
-</div>
+<div class="contenedor">
 
-<div class="panel oculto acceso" id="formLogin">
-  <h2>Ingresar a mi Cuenta</h2>
-  <input type="email" id="logMail" placeholder="Tu correo">
-  <input type="password" id="logClave" placeholder="Tu contraseña">
-  <button class="boton verde" onclick="ingresar()">Ingresar</button>
-  <button class="boton gris" onclick="volverAcceso()">Volver</button>
-</div>
-
-<div class="oculto" id="panelAdmin">
-  <div class="admin-barra">
-    <span>🌍 PANEL DE ADMINISTRACIÓN · RUTALINK</span>
-    <button class="boton boton-salir-admin" onclick="cerrarAdmin()">Cerrar Sesión</button>
-  </div>
-  <div class="admin-contenido">
-    <div class="admin-tarjeta">
-      <h3 style="margin-bottom:15px; color:#0F3460;">📊 Resumen General</h3>
-      <div class="admin-fila"><span>Total Clientes:</span><strong id="resumenClientes">--</strong></div>
-      <div class="admin-fila"><span>Total Grupos:</span><strong id="resumenGrupos">--</strong></div>
-      <div class="admin-fila"><span>Grupos Activos:</span><strong id="resumenActivos">--</strong></div>
-      <div class="admin-fila"><span>Ingresos del mes:</span><strong id="resumenPagos">--</strong></div>
+    <!-- SECCIÓN 1: REGISTRO DE CUENTA -->
+    <div id="seccion-registro" class="caja">
+        <h2>🔐 Crear Cuenta</h2>
+        <input type="email" id="correo" placeholder="tu@email.com">
+        <input type="password" id="clave" placeholder="Crear contraseña">
+        <button class="btn-azul" onclick="registrar()">Confirmar Registro</button>
+        <button class="btn-gris" onclick="volverInicio()">Volver</button>
     </div>
 
-    <div class="admin-tarjeta">
-      <h3 style="margin-bottom:15px; color:#0F3460;">💳 Planes y Precios Definidos</h3>
-      <div class="planes-grid">
-        <div class="plan-tarjeta">
-          <div class="plan-titulo">Prueba</div>
-          <div class="plan-precio">GRATIS 7 DÍAS</div>
-          <div class="plan-detalle">1 grupo</div>
-          <div class="plan-detalle">3 personas máximo</div>
-          <div class="plan-detalle">Funciones básicas</div>
-          <div class="plan-detalle">Sin anuncios</div>
+    <!-- SECCIÓN 2: TIPO DE USO -->
+    <div id="seccion-tipo-uso" class="caja oculto">
+        <h2>Paso 1: Selecciona el tipo de uso</h2>
+        <div class="fila-botones">
+            <button class="btn-uso" onclick="elegirTipo('reparto')">🚚 Reparto / Logística</button>
+            <button class="btn-uso" onclick="elegirTipo('familia')">👨‍👩‍👧‍👦 Familia / Cuidado</button>
         </div>
-        <div class="plan-tarjeta">
-          <div class="plan-titulo">Personal / Familia</div>
-          <div class="plan-precio">$ 1.200 / mes</div>
-          <div class="plan-detalle">3 grupos</div>
-          <div class="plan-detalle">10 personas por grupo</div>
-          <div class="plan-detalle">Historial completo</div>
-          <div class="plan-detalle">Sin anuncios</div>
+        <button class="btn-uso btn-seguridad" onclick="elegirTipo('seguridad')">🛡️ Seguridad / General</button>
+        <div id="mensaje-pago" class="mensaje mensaje-aviso oculto">✅ Registro recibido — se habilitará tras confirmar pago</div>
+    </div>
+
+    <!-- SECCIÓN 3: GRUPO Y MAPA -->
+    <div id="seccion-grupo" class="caja oculto">
+        <input type="text" id="codigo-grupo" placeholder="Tu código o Código del grupo">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
+            <button class="btn-azul" onclick="crearGrupo()">Crear Grupo</button>
+            <button class="btn-azul-claro" onclick="entrarGrupo()">Entrar al Grupo</button>
         </div>
-        <div class="plan-tarjeta">
-          <div class="plan-titulo">Empresa / Delivery</div>
-          <div class="plan-precio">$ 3.500 / mes</div>
-          <div class="plan-detalle">Grupos ilimitados</div>
-          <div class="plan-detalle">50 personas por grupo</div>
-          <div class="plan-detalle">Geocercas y alertas</div>
-          <div class="plan-detalle">Soporte directo</div>
+
+        <div id="codigo-creado" class="oculto">
+            <div class="grupo-codigo" id="codigo-mostrado"></div>
+            <input type="text" id="numero-invitado" placeholder="Número para invitar (ej: 11XXXXXX)">
+            <button class="btn-azul" onclick="enviarInvitacion()">✉️ Enviar invitación</button>
         </div>
-      </div>
+
+        <div class="fila-alertas" style="margin-top: 16px;">
+            <button class="btn-peligro" onclick="enviarAlerta('peligro')">🚨 Alerta peligro</button>
+            <button class="btn-llegue" onclick="enviarAlerta('llegue')">✅ Ya llegué</button>
+        </div>
+        <button class="btn-demoro" onclick="enviarAlerta('demoro')">⏳ Me demoro</button>
+        <button class="btn-salir" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
     </div>
 
-    <div class="admin-tarjeta">
-      <h3 style="margin-bottom:15px; color:#0F3460;">👥 Gestión de Clientes</h3>
-      <table class="tabla-admin">
-        <tr><th>Correo</th><th>Plan</th><th>Grupos</th><th>Zona</th><th>Estado</th><th>Acciones</th></tr>
-        <tr><td colspan="6" style="text-align:center; color:#64748B;">Esperando conexión...</td></tr>
-      </table>
-    </div>
-  </div>
-</div>
+    <!-- EL MAPA -->
+    <div id="mapa"></div>
 
-<div class="oculto" id="zonaApp" style="display: flex; flex-direction: column; flex: 1;">
-  <div class="paso">Paso 1: Selecciona el tipo de uso</div>
-
-  <div class="panel" id="categorias">
-    <button class="boton cat" onclick="elegir('delivery')">🚚 Reparto / Logística</button>
-    <button class="boton cat" onclick="elegir('familia')">👨‍👩‍👧‍👦 Familia / Cuidado</button>
-    <button class="boton cat" onclick="elegir('general')">🛡️ Seguridad / General</button>
-  </div>
-
-  <div class="panel oculto" id="formulario">
-    <input type="text" id="nombre" placeholder="Tu nombre o identificación">
-    <input type="text" id="codigo" placeholder="Código del grupo">
-    <button class="boton azul" id="btnCrear">Crear Grupo</button>
-    <button class="boton verde" id="btnEntrar">Entrar al Grupo</button>
-  </div>
-
-  <div class="aviso-invite oculto" id="inviteBox">
-    ✅ Grupo creado: <strong><span id="codMostrar"></span></strong>
-    <div class="panel" style="margin-top:8px; padding:8px;">
-      <input type="tel" id="numeroInvitar" placeholder="Número para invitar" style="min-width:200px;">
-      <button class="boton azul" onclick="enviarInvitacion()">📨 Enviar invitación</button>
-    </div>
-  </div>
-
-  <div class="panel oculto" id="alertasDelivery">
-    <button class="boton rojo" onclick="enviarSOS('accidente')">⚕️ Accidente</button>
-    <button class="boton naranja" onclick="enviarSOS('averia')">⚙️ Avería / Técnico</button>
-    <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Zona de riesgo</button>
-    <button class="boton amarillo" onclick="enviarSOS('retraso')">🕒 Retraso</button>
-  </div>
-
-  <div class="panel oculto" id="alertasFamilia">
-    <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Alerta de peligro</button>
-    <button class="boton verde" onclick="enviarSOS('llegue')">✅ Ya llegué</button>
-    <button class="boton amarillo" onclick="enviarSOS('demoro')">⏳ Me demoro</button>
-  </div>
-
-  <div class="panel oculto" id="alertasGeneral">
-    <button class="boton rojo" onclick="enviarSOS('general')">🚨 Alerta general</button>
-    <button class="boton rojo" onclick="enviarSOS('accidente')">⚕️ Accidente</button>
-    <button class="boton naranja" onclick="enviarSOS('averia')">⚙️ Avería / Técnico</button>
-    <button class="boton rojo" onclick="enviarSOS('peligro')">🚨 Riesgo / Peligro</button>
-  </div>
-
-  <div class="panel oculto" id="botonSalir">
-    <button class="boton gris" onclick="salirGrupo()">🚪 Salir / Finalizar</button>
-  </div>
-
-  <div id="mensaje" class="mensaje"></div>
-  <div id="mapa"></div>
 </div>
 
 <script>
-  const socket = io();
-  let mapa, miUbicacion = null, miPunto = null, grupoActivo = null, codigoIngresado = '', tipoUso = '';
-  let secuenciaAdmin = '';
+    // VARIABLES GLOBALES
+    let mapa;
+    let miUbicacion = null;
+    let marcadores = {};
+    let codigoGrupoActual = null;
+    let tipoUsuario = null;
+    let usuarioRegistrado = false;
 
-  mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
-  
-  setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 300);
-  window.addEventListener('resize', () => { if(mapa) mapa.invalidateSize(); });
-
-  window.addEventListener('offline', () => { document.getElementById('avisoConexion').style.display='block'; document.getElementById('avisoConexion').textContent='Sin conexión a internet'; });
-  window.addEventListener('online', () => { document.getElementById('avisoConexion').textContent='¡Conectado!'; setTimeout(()=>document.getElementById('avisoConexion').style.display='none', 2000); });
-
-  function mostrarRegistro() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formRegistro').classList.remove('oculto'); }
-  function mostrarLogin() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('formLogin').classList.remove('oculto'); }
-  function volverAcceso() { document.getElementById('formRegistro').classList.add('oculto'); document.getElementById('formLogin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
-  function entrarSinCuenta() { document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('zonaApp').classList.remove('oculto'); setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 100); }
-  function registrar() { mostrarMensaje("✅ Solicitud recibida — te contactaremos para confirmar el pago", "bien"); setTimeout(entrarSinCuenta, 1500); }
-  function ingresar() { mostrarMensaje("✅ Sesión iniciada", "bien"); setTimeout(entrarSinCuenta, 1000); }
-
-  // 🛑 CAMBIÁ AQUÍ TU CLAVE DE ADMINISTRADOR
-  document.addEventListener('keydown', e => {
-    secuenciaAdmin += e.key;
-    if(secuenciaAdmin.includes('123')){
-      secuenciaAdmin = '';
-      const clave = prompt("Ingresar clave de Administrador:");
-      // PONÉ TU CLAVE EN LUGAR DE "MGJ2026"
-      if(clave === "MGJ2026"){
-        document.getElementById('pantallaAcceso').classList.add('oculto');
-        document.getElementById('panelAdmin').classList.remove('oculto');
-      } else alert("Clave incorrecta");
+    // INICIAR MAPA
+    function iniciarMapa() {
+        mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(mapa);
+        pedirUbicacion();
     }
-    setTimeout(() => secuenciaAdmin = '', 2000);
-  });
-  function cerrarAdmin() { document.getElementById('panelAdmin').classList.add('oculto'); document.getElementById('pantallaAcceso').classList.remove('oculto'); }
 
-  function elegir(tipo) {
-    tipoUso = tipo;
-    document.getElementById('categorias').classList.add('oculto');
-    document.getElementById('formulario').classList.remove('oculto');
-    document.getElementById('alertas'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.remove('oculto');
-    setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 100);
-  }
+    // PEDIR UBICACIÓN REAL
+    function pedirUbicacion() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                posicion => {
+                    miUbicacion = [posicion.coords.latitude, posicion.coords.longitude];
+                    mapa.setView(miUbicacion, 14);
+                    if (!marcadores['yo']) {
+                        marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
+                            className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold; white-space:nowrap;">Tú 📍</div>', offset: [40, -5]
+                        })}).addTo(mapa);
+                    } else {
+                        marcadores['yo'].setLatLng(miUbicacion);
+                    }
+                    enviarUbicacionServidor(miUbicacion);
+                },
+                error => console.log("No se pudo obtener ubicación"),
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
+            );
+        }
+    }
 
-  function activarUbicacion() {
-    if (!navigator.geolocation) return mostrarMensaje("Tu dispositivo no admite ubicación", "mal");
-    navigator.geolocation.watchPosition(
-      (pos) => {
-        miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        if (!grupoActivo) mapa.setView([miUbicacion.lat, miUbicacion.lng], 16);
+    // SIMULAR ENVÍO AL SERVIDOR
+    function enviarUbicacionServidor(coords) {
+        console.log("Enviando ubicación:", coords, "Grupo:", codigoGrupoActual);
+    }
+
+    // 1. REGISTRAR CUENTA
+    function registrar() {
+        const correo = document.getElementById('correo').value.trim();
+        const clave = document.getElementById('clave').value.trim();
+        if (!correo || !clave) return alert("Completá correo y contraseña");
         
-        if (!miPunto && miUbicacion) {
-          miPunto = L.marker([miUbicacion.lat, miUbicacion.lng], {
-            icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize:[32,32]})
-          }).addTo(mapa).bindPopup("Tú 📍").openPopup();
-        } else if (miPunto) {
-          miPunto.setLatLng([miUbicacion.lat, miUbicacion.lng]);
+        // Simula registro y pago pendiente
+        usuarioRegistrado = true;
+        document.getElementById('seccion-registro').classList.add('oculto');
+        document.getElementById('seccion-tipo-uso').classList.remove('oculto');
+    }
+
+    // VOLVER AL INICIO
+    function volverInicio() {
+        document.getElementById('seccion-registro').classList.remove('oculto');
+        document.getElementById('seccion-tipo-uso').classList.add('oculto');
+        document.getElementById('seccion-grupo').classList.add('oculto');
+    }
+
+    // 2. ELEGIR TIPO DE USO
+    function elegirTipo(tipo) {
+        tipoUsuario = tipo;
+        document.querySelectorAll('.btn-uso').forEach(b => b.classList.remove('seleccionado'));
+        event.target.classList.add('seleccionado');
+        document.getElementById('mensaje-pago').classList.remove('oculto');
+        
+        setTimeout(() => {
+            document.getElementById('seccion-tipo-uso').classList.add('oculto');
+            document.getElementById('seccion-grupo').classList.remove('oculto');
+        }, 1500);
+    }
+
+    // 3. CREAR GRUPO
+    function crearGrupo() {
+        codigoGrupoActual = Math.floor(Math.random() * 90000 + 10000).toString();
+        document.getElementById('codigo-mostrado').textContent = codigoGrupoActual;
+        document.getElementById('codigo-creado').classList.remove('oculto');
+        document.getElementById('codigo-grupo').value = codigoGrupoActual;
+        alert("✅ Grupo creado. Código: " + codigoGrupoActual + "\nCompartí este código con quien quieras que te vea.");
+    }
+
+    // 4. ENTRAR A GRUPO
+    function entrarGrupo() {
+        const cod = document.getElementById('codigo-grupo').value.trim();
+        if (!cod) return alert("Escribí el código del grupo");
+        codigoGrupoActual = cod;
+        alert("✅ Entraste al grupo: " + cod + "\nTu ubicación se compartirá con el creador.");
+    }
+
+    // 5. ENVIAR INVITACIÓN
+    function enviarInvitacion() {
+        const num = document.getElementById('numero-invitado').value.trim();
+        if (!num) return alert("Escribí el número");
+        const enlace = window.location.href + "?grupo=" + codigoGrupoActual;
+        const mensaje = "¡Hola! Te invito a seguirme en RutaLink 🔗\nCódigo: " + codigoGrupoActual + "\nEntrá acá: " + enlace;
+        window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(mensaje), "_blank");
+    }
+
+    // 6. ENVIAR ALERTA
+    function enviarAlerta(tipo) {
+        if (!codigoGrupoActual) return alert("Creá o entrá a un grupo primero");
+        let texto = "";
+        switch(tipo) {
+            case "peligro": texto = "🚨 ¡ALERTA DE PELIGRO! Necesito ayuda urgente."; break;
+            case "llegue": texto = "✅ Ya llegué a destino."; break;
+            case "demoro": texto = "⏳ Me demoro un poco más, no me esperen."; break;
         }
+        alert(texto + "\n✅ Enviado al grupo " + codigoGrupoActual);
+    }
 
-        if (grupoActivo) {
-          socket.emit('ubicacion', {
-            grupo: grupoActivo, nombre: document.getElementById('nombre').value.trim(),
-            lat: miUbicacion.lat, lng: miUbicacion.lng
-          });
+    // 7. SALIR DEL GRUPO
+    function salirGrupo() {
+        if (confirm("¿Cerrar sesión y salir del grupo?")) {
+            codigoGrupoActual = null;
+            document.getElementById('codigo-creado').classList.add('oculto');
+            document.getElementById('codigo-grupo').value = "";
+            alert("✅ Desconectado. Tu ubicación dejó de compartirse.");
         }
-      },
-      () => mostrarMensaje("Por favor habilita la ubicación", "mal"),
-      { enableHighAccuracy: true }
-    );
-  }
+    }
 
-  function enviarSOS(tipo) {
-    if (!grupoActivo || !miUbicacion) return mostrarMensaje("Primero crea o entra a un grupo", "mal");
-    socket.emit('sos', { grupo: grupoActivo, tipo: tipo, ...miUbicacion });
-    mostrarMensaje("Alerta enviada a todos los integrantes", "bien");
-  }
+    // DETECTAR CÓDIGO DESDE ENLACE
+    function leerEnlace() {
+        const params = new URLSearchParams(window.location.search);
+        const cod = params.get('grupo');
+        if (cod) {
+            document.getElementById('codigo-grupo').value = cod;
+            document.getElementById('seccion-registro').classList.add('oculto');
+            document.getElementById('seccion-tipo-uso').classList.add('oculto');
+            document.getElementById('seccion-grupo').classList.remove('oculto');
+            codigoGrupoActual = cod;
+            setTimeout(() => entrarGrupo(), 800);
+        }
+    }
 
-  function salirGrupo() {
-    if (!confirm("¿Seguro querés salir y dejar de compartir tu ubicación?")) return;
-    grupoActivo = null;
-    miPunto = null;
-    socket.disconnect();
-    mostrarMensaje("✅ Sesión finalizada", "bien");
-    setTimeout(() => location.reload(), 2000);
-  }
-
-  function enviarInvitacion() {
-    const num = document.getElementById('numeroInvitar').value.trim();
-    const cod = document.getElementById('codMostrar').textContent;
-    if (!num || !cod) return mostrarMensaje("Ingresá el número", "mal");
-    const texto = `🛰️ RutaLink: Te invitaron a un seguimiento seguro. Entrá: https://geoshare-mgj.onrender.com | Código: ${cod}`;
-    window.open(`https://wa.me/54${num}?text=${encodeURIComponent(texto)}`, 'whatsapp_invite', 'width=520,height=720,top=40,left=40');
-    setTimeout(() => window.focus(), 350);
-    mostrarMensaje("✅ Mensaje listo en WhatsApp", "bien");
-  }
-
-  document.getElementById('btnCrear').addEventListener('click', () => {
-    const nom = document.getElementById('nombre').value.trim();
-    codigoIngresado = document.getElementById('codigo').value.trim();
-    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
-    activarUbicacion();
-    socket.emit('crear-grupo', { nombre: nom, grupo: codigoIngresado, tipo: tipoUso });
-  });
-
-  document.getElementById('btnEntrar').addEventListener('click', () => {
-    const nom = document.getElementById('nombre').value.trim();
-    codigoIngresado = document.getElementById('codigo').value.trim();
-    if (!nom || !codigoIngresado) return mostrarMensaje("Completa tus datos", "mal");
-    activarUbicacion();
-    socket.emit('entrar-grupo', { nombre: nom, grupo: codigoIngresado });
-  });
-
-  socket.on('grupo-creado', (cod) => {
-    grupoActivo = cod;
-    document.getElementById('codMostrar').textContent = cod;
-    document.getElementById('inviteBox').classList.remove('oculto');
-    document.getElementById('botonSalir').classList.remove('oculto');
-    mostrarMensaje(`✅ Grupo creado: ${cod}`, "bien");
-  });
-
-  socket.on('entrada-ok', (cod) => {
-    grupoActivo = cod;
-    mostrarMensaje(`✅ Ingresaste al grupo: ${cod}`, "bien");
-  });
-
-  socket.on('error', (txt) => mostrarMensaje(txt, "mal"));
-
-  socket.on('nueva-ubicacion', (datos) => {
-    if (datos.nombre === document.getElementById('nombre').value.trim()) return;
-    L.marker([datos.lat, datos.lng]).addTo(mapa).bindPopup(datos.nombre);
-  });
-
-  socket.on('alerta-sos', (datos) => {
-    let texto = "🚨 ALERTA RECIBIDA";
-    if(datos.tipo==='accidente') texto="⚕️ ACCIDENTE REPORTADO";
-    if(datos.tipo==='averia') texto="⚙️ AVERÍA / TÉCNICO";
-    if(datos.tipo==='peligro') texto="🚨 RIESGO DETECTADO";
-    if(datos.tipo==='retraso') texto="🕒 RETRASO EN RECORRIDO";
-    if(datos.tipo==='llegue') texto="✅ DESTINO ALCANZADO";
-    if(datos.tipo==='demoro') texto="⏳ SE DEMORARÁ MÁS";
-    
-    mapa.setView([datos.lat, datos.lng], 16);
-    L.marker([datos.lat, datos.lng], {icon: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/1828/1828665.png', iconSize:[32,32]})}).addTo(mapa).bindPopup(texto).openPopup();
-    alert(texto);
-  });
-
-  function mostrarMensaje(texto, tipo) {
-    const caja = document.getElementById('mensaje');
-    caja.textContent = texto;
-    caja.className = `mensaje ${tipo}`;
-    caja.style.display = 'block';
-    setTimeout(() => caja.style.display = 'none', 6000);
-  }
+    // INICIAR TODO AL CARGAR
+    window.onload = () => {
+        iniciarMapa();
+        leerEnlace();
+    };
 </script>
 </body>
 </html>
