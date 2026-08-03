@@ -6,6 +6,7 @@
     <title>RutaLink v4 · Seguimiento Inteligente</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 50%, #e0f2fe 100%); min-height: 100vh; color: #1e293b; }
@@ -54,7 +55,6 @@
 
 <div class="contenedor">
 
-    <!-- PANTALLA DE INICIO - SIEMPRE APARECE PRIMERO -->
     <div id="pantalla-inicio" class="inicio">
         <h2>Bienvenido a RutaLink</h2>
         <p>Seguimiento de familiares, menores y equipos de trabajo</p>
@@ -64,7 +64,6 @@
         <button class="btn-admin" onclick="mostrarAdmin()">⚙️ Panel de Administrador</button>
     </div>
 
-    <!-- ADMINISTRADOR -->
     <div id="seccion-admin" class="caja oculto">
         <h2>⚙️ Panel de Administrador</h2>
         <input type="password" id="clave-admin" placeholder="Escribir clave de administrador">
@@ -82,41 +81,34 @@
         <button class="btn-salir" onclick="cerrarAdmin()">Cerrar sesión</button>
     </div>
 
-    <!-- REGISTRO + PLANES -->
     <div id="seccion-registro" class="caja oculto">
         <h2>📝 Crear Cuenta y Elegir Plan</h2>
         <input type="email" id="correo" placeholder="tu@email.com">
         <input type="password" id="clave" placeholder="Crear contraseña">
-
         <h3 style="margin:16px 0 8px 0; font-size:15px;">Seleccioná tu plan:</h3>
-
         <label class="plan">
             <input type="radio" name="plan" value="prueba" checked>
             <strong>🆓 Prueba Gratuita</strong>
             <div class="precio">USD 0 / 7 días</div>
             <small>1 grupo · hasta 3 personas · funciones básicas</small>
         </label>
-
         <label class="plan recomendado">
             <input type="radio" name="plan" value="familia">
             <strong>👨‍👩‍👧‍👦 Plan Familia</strong>
             <div class="precio">USD 4.99 / mes</div>
-            <small>Grupos ilimitados · hasta 10 personas · historial de ubicaciones · control parental</small>
+            <small>Grupos ilimitados · hasta 10 personas · historial · control parental</small>
         </label>
-
         <label class="plan">
             <input type="radio" name="plan" value="empresa">
             <strong>🚚 Plan Empresa / Delivery</strong>
             <div class="precio">USD 9.99 / mes</div>
-            <small>Todo ilimitado · geocercas · alertas avanzadas · panel de control · sin publicidad</small>
+            <small>Todo ilimitado · geocercas · alertas avanzadas · sin publicidad</small>
         </label>
-
         <div class="mensaje-pago">✅ Al confirmar serás redirigido al pago. Se habilitará tras confirmarse.</div>
         <button class="btn-azul" onclick="registrar()">Confirmar Registro y Pagar</button>
         <button class="btn-salir" onclick="volverInicio()">Volver</button>
     </div>
 
-    <!-- INICIO DE SESIÓN -->
     <div id="seccion-login" class="caja oculto">
         <h2>🔑 Iniciar Sesión</h2>
         <input type="email" id="correo-login" placeholder="Tu correo">
@@ -125,7 +117,6 @@
         <button class="btn-salir" onclick="volverInicio()">Volver</button>
     </div>
 
-    <!-- TIPO DE USO -->
     <div id="seccion-tipo-uso" class="caja oculto">
         <h2>Paso 1: ¿Para qué lo vas a usar?</h2>
         <div class="fila-botones">
@@ -135,187 +126,179 @@
         <button class="btn-uso" style="width:100%; margin-top:10px;" onclick="elegirTipo('seguridad')">🛡️ Seguridad / Personal</button>
     </div>
 
-    <!-- CREAR / ENTRAR GRUPO + CONTROL PARENTAL -->
     <div id="seccion-grupo" class="caja oculto">
         <input type="text" id="codigo-grupo" placeholder="Tu código o Código del grupo">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
             <button class="btn-azul" onclick="crearGrupo()">Crear Grupo</button>
             <button class="btn-verde" onclick="entrarGrupo()">Entrar al Grupo</button>
         </div>
-
         <div id="codigo-creado" class="oculto">
             <div class="grupo-codigo">🔑 Tu código: <span id="codigo-mostrado"></span></div>
-
-            <!-- CONTROL PARENTAL -->
             <label class="opcion">
-                <input type="checkbox" id="bloquear-salir"> 🔒 Bloquear desconexión de miembros (menores no pueden salir)
+                <input type="checkbox" id="bloquear-salir"> 🔒 Bloquear desconexión de miembros
             </label>
-
-            <input type="tel" id="numero-invitado" placeholder="Número para invitar (ej: 11XXXXXX)">
+            <input type="tel" id="numero-invitado" placeholder="Número para invitar">
             <button class="btn-azul" onclick="enviarInvitacion()">✉️ Invitar por WhatsApp</button>
         </div>
-
         <div class="fila-alertas" style="margin-top: 18px;">
             <button class="btn-peligro" onclick="enviarAlerta('peligro')">🚨 Alerta de peligro</button>
             <button class="btn-llegue" onclick="enviarAlerta('llegue')">✅ Ya llegué</button>
         </div>
         <button class="btn-demoro" onclick="enviarAlerta('demoro')">⏳ Me demoro más</button>
-        <button id="btn-salir-app" class="btn-salir" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
+        <button id="btn-salir-app" class="btn-salir" onclick="salirGrupo()">🚪 Salir / Terminar</button>
     </div>
 
-    <!-- MAPA -->
     <div id="mapa" class="oculto"></div>
 </div>
 
 <script>
-    let mapa, miUbicacion = null, marcadores = {}, codigoGrupoActual = null;
-    let esAdmin = false, bloquearDesconexion = false;
+const socket = io();
+let mapa, miUbicacion = null, marcadores = {}, codigoGrupoActual = null;
+let esAdmin = false, bloquearDesconexion = false;
 
-    // INICIAR MAPA
-    function iniciarMapa() {
-        if (!mapa) {
-            mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapa);
-        }
-        pedirUbicacion();
+function iniciarMapa() {
+    if (!mapa) {
+        mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapa);
     }
+    pedirUbicacion();
+}
 
-    function pedirUbicacion() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(
-                pos => {
-                    miUbicacion = [pos.coords.latitude, pos.coords.longitude];
-                    mapa.setView(miUbicacion, 14);
-                    if (!marcadores['yo']) {
-                        marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
-                            className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold;">Tú 📍</div>', offset: [40,-5]
-                        })}).addTo(mapa);
-                    } else {
-                        marcadores['yo'].setLatLng(miUbicacion);
-                    }
-                },
-                err => alert("Permití la ubicación en el candadito 🔒"),
-                { enableHighAccuracy: true }
-            );
-        }
+function pedirUbicacion() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            pos => {
+                miUbicacion = [pos.coords.latitude, pos.coords.longitude];
+                mapa.setView(miUbicacion, 14);
+                if (!marcadores['yo']) {
+                    marcadores['yo'] = L.marker(miUbicacion, {icon: L.divIcon({
+                        className: 'mi-marca', html: '<div style="background:#2563eb; color:white; padding:4px 8px; border-radius:12px; font-size:13px; font-weight:bold;">Tú 📍</div>', offset: [40,-5]
+                    })}).addTo(mapa);
+                } else {
+                    marcadores['yo'].setLatLng(miUbicacion);
+                }
+                if (codigoGrupoActual) {
+                    socket.emit('actualizar-ubicacion', {
+                        codigo: codigoGrupoActual, lat: pos.coords.latitude, lng: pos.coords.longitude, nombre: 'Yo'
+                    });
+                }
+            },
+            err => alert("Permití la ubicación en el candadito 🔒"),
+            { enableHighAccuracy: true }
+        );
     }
+}
 
-    // NAVEGACIÓN
-    function ocultarTodo() {
-        document.querySelectorAll('.caja, .inicio, #mapa').forEach(el => el.classList.add('oculto'));
+socket.on('ubicacion-recibida', (datos) => {
+    if (datos.id === socket.id) return;
+    if (!marcadores[datos.id]) {
+        marcadores[datos.id] = L.marker([datos.lat, datos.lng], {icon: L.divIcon({
+            className: 'mi-marca', html: `<div style="background:#ef4444; color:white; padding:4px 8px; border-radius:12px; font-size:13px;">${datos.nombre} 📍</div>`, offset: [40,-5]
+        })}).addTo(mapa);
+    } else {
+        marcadores[datos.id].setLatLng([datos.lat, datos.lng]);
     }
-    function volverInicio() {
-        ocultarTodo();
-        document.getElementById('pantalla-inicio').classList.remove('oculto');
-    }
-    function mostrarRegistro() { ocultarTodo(); document.getElementById('seccion-registro').classList.remove('oculto'); }
-    function mostrarLogin() { ocultarTodo(); document.getElementById('seccion-login').classList.remove('oculto'); }
-    function mostrarAdmin() { ocultarTodo(); document.getElementById('seccion-admin').classList.remove('oculto'); }
-    function irPrueba() { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); }
-    function mostrarMapa() {
-        document.getElementById('mapa').classList.remove('oculto');
-        setTimeout(iniciarMapa, 100);
-    }
+});
 
-    // ADMINISTRADOR
-    function verificarAdmin() {
-        const clave = document.getElementById('clave-admin').value.trim();
-        if (clave === 'AdminRutaLink2026') {
-            esAdmin = true;
-            ocultarTodo();
-            document.getElementById('panel-admin').classList.remove('oculto');
-        } else {
-            alert("❌ Clave incorrecta");
-        }
-    }
-    function cerrarAdmin() { esAdmin = false; volverInicio(); }
+socket.on('alerta-recibida', (datos) => {
+    let txt = datos.tipo==='peligro' ? `🚨 ¡ALERTA DE PELIGRO! de ${datos.de}` :
+              datos.tipo==='llegue' ? `✅ ${datos.de} ya llegó` : `⏳ ${datos.de} se demora más`;
+    alert(txt);
+});
 
-    // REGISTRO CON PLANES
-    function registrar() {
-        const corr = document.getElementById('correo').value.trim();
-        const clav = document.getElementById('clave').value.trim();
-        const plan = document.querySelector('input[name="plan"]:checked').value;
-        if (!corr || !clav) return alert("Completá correo y contraseña");
-        let nombrePlan = plan==='prueba' ? 'Prueba Gratuita' : plan==='familia' ? 'Plan Familia' : 'Plan Empresa/Delivery';
-        alert("✅ Registro recibido!\n📋 Plan: " + nombrePlan + "\n\nSerás redirigido al pago. Se habilitará tras confirmarse.");
-        ocultarTodo(); document.getElementById('seccion-tipo-uso').classList.remove('oculto');
-    }
+socket.on('confirmar-union', (datos) => {
+    esAdmin = datos.esAdmin;
+    bloquearDesconexion = datos.bloquearSalida;
+});
 
-    function ingresar() {
-        const corr = document.getElementById('correo-login').value.trim();
-        const clav = document.getElementById('clave-login').value.trim();
-        if (!corr || !clav) return alert("Completá todos los datos");
-        ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto');
+socket.on('respuesta-salir', (datos) => {
+    if (!datos.permitido) return alert("🔒 El creador bloqueó la desconexión. No podés salir.");
+    if (confirm("¿Dejar de compartir ubicación y volver?")) {
+        codigoGrupoActual = null;
+        volverInicio();
     }
+});
 
-    function elegirTipo(tipo) {
-        ocultarTodo();
-        document.getElementById('seccion-grupo').classList.remove('oculto');
+function ocultarTodo() {
+    document.querySelectorAll('.caja, .inicio, #mapa').forEach(el => el.classList.add('oculto'));
+}
+function volverInicio() { ocultarTodo(); document.getElementById('pantalla-inicio').classList.remove('oculto'); }
+function mostrarRegistro() { ocultarTodo(); document.getElementById('seccion-registro').classList.remove('oculto'); }
+function mostrarLogin() { ocultarTodo(); document.getElementById('seccion-login').classList.remove('oculto'); }
+function mostrarAdmin() { ocultarTodo(); document.getElementById('seccion-admin').classList.remove('oculto'); }
+function irPrueba() { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); }
+function mostrarMapa() { document.getElementById('mapa').classList.remove('oculto'); setTimeout(iniciarMapa, 100); }
+
+function verificarAdmin() {
+    const clave = document.getElementById('clave-admin').value.trim();
+    if (clave === 'AdminRutaLink2026') { esAdmin = true; ocultarTodo(); document.getElementById('panel-admin').classList.remove('oculto'); }
+    else alert("❌ Clave incorrecta");
+}
+function cerrarAdmin() { esAdmin = false; volverInicio(); }
+
+function registrar() {
+    const corr = document.getElementById('correo').value.trim();
+    const clav = document.getElementById('clave').value.trim();
+    if (!corr || !clav) return alert("Completá correo y contraseña");
+    ocultarTodo(); document.getElementById('seccion-tipo-uso').classList.remove('oculto');
+}
+function ingresar() {
+    const corr = document.getElementById('correo-login').value.trim();
+    const clav = document.getElementById('clave-login').value.trim();
+    if (!corr || !clav) return alert("Completá todos los datos");
+    ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto');
+}
+function elegirTipo(tipo) { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); }
+
+function crearGrupo() {
+    codigoGrupoActual = Math.floor(Math.random() * 90000 + 10000).toString();
+    document.getElementById('codigo-mostrado').textContent = codigoGrupoActual;
+    document.getElementById('codigo-creado').classList.remove('oculto');
+    document.getElementById('codigo-grupo').value = codigoGrupoActual;
+    bloquearDesconexion = document.getElementById('bloquear-salir').checked;
+    socket.emit('unirse-grupo', { codigo: codigoGrupoActual, esCreador: true, bloquearSalida: bloquearDesconexion });
+    alert("✅ Grupo creado!\n🔑 Código: " + codigoGrupoActual);
+    mostrarMapa();
+}
+
+function entrarGrupo() {
+    const cod = document.getElementById('codigo-grupo').value.trim();
+    if (!cod) return alert("Escribí el código del grupo");
+    codigoGrupoActual = cod;
+    socket.emit('unirse-grupo', { codigo: cod, esCreador: false });
+    alert("✅ Entraste al grupo: " + cod);
+    mostrarMapa();
+}
+
+function enviarInvitacion() {
+    const num = document.getElementById('numero-invitado').value.trim();
+    if (!num) return alert("Escribí el número");
+    const enlace = window.location.href.split('?')[0] + "?grupo=" + codigoGrupoActual;
+    const msj = encodeURIComponent("🛰️ Te invito a RutaLink\nCódigo: " + codigoGrupoActual + "\nEntrá acá: " + enlace);
+    window.open("https://wa.me/" + num + "?text=" + msj, "_blank");
+}
+
+function enviarAlerta(tipo) {
+    if (!codigoGrupoActual) return alert("Creá o entrá a un grupo primero");
+    socket.emit('enviar-alerta', { codigo: codigoGrupoActual, tipo: tipo, nombre: 'Miembro' });
+    let txt = tipo==='peligro' ? "🚨 ¡ALERTA DE PELIGRO!" : tipo==='llegue' ? "✅ Ya llegué" : "⏳ Me demoro más";
+    alert(txt + "\n\n✅ Enviado");
+}
+
+function salirGrupo() {
+    if (!codigoGrupoActual) return volverInicio();
+    socket.emit('pedir-salir', codigoGrupoActual);
+}
+
+window.onload = () => {
+    const p = new URLSearchParams(window.location.search);
+    const cod = p.get('grupo');
+    if (cod) {
+        document.getElementById('codigo-grupo').value = cod;
+        irPrueba();
+        setTimeout(() => { codigoGrupoActual = cod; socket.emit('unirse-grupo', { codigo: cod, esCreador: false }); mostrarMapa(); }, 300);
     }
-
-    // CREAR GRUPO + CONTROL PARENTAL
-    function crearGrupo() {
-        codigoGrupoActual = Math.floor(Math.random() * 90000 + 10000).toString();
-        document.getElementById('codigo-mostrado').textContent = codigoGrupoActual;
-        document.getElementById('codigo-creado').classList.remove('oculto');
-        document.getElementById('codigo-grupo').value = codigoGrupoActual;
-        bloquearDesconexion = document.getElementById('bloquear-salir').checked;
-        alert("✅ Grupo creado!\n🔑 Código: " + codigoGrupoActual + "\nCompartí este código.");
-        mostrarMapa();
-    }
-
-    function entrarGrupo() {
-        const cod = document.getElementById('codigo-grupo').value.trim();
-        if (!cod) return alert("Escribí el código del grupo");
-        codigoGrupoActual = cod;
-        alert("✅ Entraste al grupo: " + cod);
-        mostrarMapa();
-    }
-
-    // INVITACIÓN
-    function enviarInvitacion() {
-        const num = document.getElementById('numero-invitado').value.trim();
-        if (!num) return alert("Escribí el número");
-        const enlace = window.location.href.split('?')[0] + "?grupo=" + codigoGrupoActual;
-        const msj = encodeURIComponent("🛰️ Te invito a RutaLink\nCódigo: " + codigoGrupoActual + "\nEntrá acá: " + enlace);
-        window.open("https://wa.me/" + num + "?text=" + msj, "_blank");
-    }
-
-    // ALERTAS
-    function enviarAlerta(tipo) {
-        if (!codigoGrupoActual) return alert("Creá o entrá a un grupo primero");
-        let txt = tipo==='peligro' ? "🚨 ¡ALERTA DE PELIGRO!" : tipo==='llegue' ? "✅ Ya llegué a destino" : "⏳ Me demoro más";
-        alert(txt + "\n\n✅ Enviado");
-    }
-
-    // SALIR / CONTROL PARENTAL
-    function salirGrupo() {
-        if (bloquearDesconexion) {
-            alert("🔒 El creador bloqueó la desconexión. No podés salir.");
-            return;
-        }
-        if (confirm("¿Dejar de compartir ubicación y volver?")) {
-            codigoGrupoActual = null;
-            bloquearDesconexion = false;
-            volverInicio();
-        }
-    }
-
-    // ENTRAR DESDE ENLACE COMPARTIDO
-    window.onload = () => {
-        const p = new URLSearchParams(window.location.search);
-        const cod = p.get('grupo');
-        if (cod) {
-            document.getElementById('codigo-grupo').value = cod;
-            ocultarTodo();
-            document.getElementById('seccion-grupo').classList.remove('oculto');
-            setTimeout(() => {
-                codigoGrupoActual = cod;
-                mostrarMapa();
-            }, 300);
-        }
-    };
+};
 </script>
 </body>
 </html>
-<script src="/socket.io/socket.io.js"></script>
