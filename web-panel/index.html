@@ -9,36 +9,26 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
-        /* IMAGEN DE FONDO DE TODA LA PÁGINA */
+        /* FONDO QUE SÍ CARGA SIEMPRE */
         body {
-            background: url('https://images.unsplash.com/photo-1593814681464-eef6c9c54a36?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
             background-size: cover;
             color: #1a202c;
-            position: relative;
-        }
-        /* Capa semitransparente para que se lea bien */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            z-index: 0;
         }
         
         /* CABECERA */
         .header {
-            position: relative; z-index: 1;
-            background: linear-gradient(135deg, rgba(30,64,175,.95), rgba(59,130,246,.95));
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
             color: white; padding: 16px; text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         .header h1 { font-size: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .subtitulo { font-size: 13px; opacity: 0.95; margin-top: 4px; }
         
-        /* CONTENEDOR GENERAL */
-        .contenedor { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 12px; }
+        /* CONTENEDOR */
+        .contenedor { max-width: 480px; margin: 0 auto; padding: 12px; }
         
-        /* PANTALLA DE INICIO */
+        /* PANTALLA INICIO */
         .inicio { text-align: center; padding: 30px 15px; }
         .inicio h2 { font-size: 24px; color: #1e40af; margin-bottom: 10px; }
         .inicio p { font-size: 14px; color: #4b5563; margin-bottom: 25px; }
@@ -48,42 +38,36 @@
         .btn-claro { background: rgba(239,246,255,.95); color: #1e40af; border: 1px solid #bfdbfe; }
         button:hover { opacity: 0.93; transform: translateY(-1px); }
         
-        /* CAJA GENERAL */
+        /* CAJAS */
         .caja { background: rgba(255,255,255,.95); border-radius: 14px; padding: 20px; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .caja h2 { font-size: 17px; margin-bottom: 14px; color: #1e40af; }
         input { width: 100%; padding: 12px; margin: 6px 0 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
-        button { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
         
-        /* TIPOS DE USO */
+        /* TIPOS DE USO Y ALERTAS */
         .fila-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
         .btn-uso { background: rgba(239,246,255,.95); color: #1e40af; border: 1px solid #bfdbfe; font-size: 14px; }
         .btn-seguridad { grid-column: 1 / -1; background: rgba(240,253,244,.95); color: #166534; border: 1px solid #bbf7d0; }
         .mensaje-pago { padding: 10px; border-radius: 8px; background: rgba(254,243,199,.95); color: #92400e; margin: 12px 0; font-size: 14px; }
-        
-        /* GRUPO Y ALERTAS */
         .grupo-codigo { font-size: 22px; font-weight: bold; color: #1e40af; text-align: center; padding: 10px; background: rgba(239,246,255,.95); border-radius: 8px; margin: 8px 0; }
-        .fila-alertas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
         .btn-peligro { background: #dc2626; color: white; }
         .btn-llegue { background: #16a34a; color: white; }
         .btn-demoro { background: #f59e0b; color: #1f2937; grid-column: 1 / -1; margin-top: 8px; }
         .btn-salir { background: #4b5563; color: white; width: 100%; margin-top: 12px; }
         
         /* MAPA */
-        #mapa { height: 380px; border-radius: 12px; margin-top: 12px; z-index: 1; position: relative; }
+        #mapa { height: 380px; border-radius: 12px; margin-top: 12px; }
         .oculto { display: none !important; }
     </style>
 </head>
 <body>
 
-<!-- CABECERA -->
 <div class="header">
     <h1>🛰️ RutaLink · Seguimiento Inteligente</h1>
     <p class="subtitulo">Seguimiento seguro, privado y en tiempo real. Solo quien crea el grupo tiene el control total.</p>
 </div>
 
 <div class="contenedor">
-
-    <!-- PANTALLA DE INICIO -->
     <div id="pantalla-inicio" class="inicio">
         <h2>Bienvenido a RutaLink</h2>
         <p>Las cuentas y registro son para usuarios con planes contratados</p>
@@ -92,7 +76,6 @@
         <button class="btn-inicio btn-claro" onclick="irPrueba()">🎯 Prueba rápida sin cuenta</button>
     </div>
 
-    <!-- REGISTRO -->
     <div id="seccion-registro" class="caja oculto">
         <h2>🔐 Crear Cuenta</h2>
         <input type="email" id="correo" placeholder="tu@email.com">
@@ -101,7 +84,6 @@
         <button class="btn-salir" onclick="volverInicio()">Volver</button>
     </div>
 
-    <!-- INICIO DE SESIÓN -->
     <div id="seccion-login" class="caja oculto">
         <h2>🔑 Iniciar Sesión</h2>
         <input type="email" id="correo-login" placeholder="Tu correo">
@@ -110,7 +92,6 @@
         <button class="btn-salir" onclick="volverInicio()">Volver</button>
     </div>
 
-    <!-- TIPO DE USO -->
     <div id="seccion-tipo-uso" class="caja oculto">
         <h2>Paso 1: Selecciona el tipo de uso</h2>
         <div class="fila-botones">
@@ -121,20 +102,17 @@
         <div class="mensaje-pago">✅ Registro recibido — se habilitará tras confirmar pago</div>
     </div>
 
-    <!-- GRUPO Y MAPA -->
     <div id="seccion-grupo" class="caja oculto">
         <input type="text" id="codigo-grupo" placeholder="Tu código o Código del grupo">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
             <button class="btn-azul" onclick="crearGrupo()">Crear Grupo</button>
             <button class="btn-verde" onclick="entrarGrupo()">Entrar al Grupo</button>
         </div>
-
         <div id="codigo-creado" class="oculto">
             <div class="grupo-codigo" id="codigo-mostrado"></div>
             <input type="text" id="numero-invitado" placeholder="Número para invitar (ej: 11XXXXXX)">
             <button class="btn-azul" onclick="enviarInvitacion()">✉️ Enviar invitación</button>
         </div>
-
         <div class="fila-alertas" style="margin-top: 16px;">
             <button class="btn-peligro" onclick="enviarAlerta('peligro')">🚨 Alerta peligro</button>
             <button class="btn-llegue" onclick="enviarAlerta('llegue')">✅ Ya llegué</button>
@@ -143,15 +121,12 @@
         <button class="btn-salir" onclick="salirGrupo()">🚪 Salir / Terminar seguimiento</button>
     </div>
 
-    <!-- MAPA -->
     <div id="mapa"></div>
-
 </div>
 
 <script>
     let mapa, miUbicacion = null, marcadores = {}, codigoGrupoActual = null;
 
-    // INICIAR MAPA Y UBICACIÓN
     function iniciarMapa() {
         mapa = L.map('mapa').setView([-34.6037, -58.3816], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapa);
@@ -170,22 +145,18 @@
                         })}).addTo(mapa);
                     } else marcadores['yo'].setLatLng(miUbicacion);
                 },
-                err => alert("Permití la ubicación en el candadito 🔒 de la barra de direcciones"),
+                err => alert("Permití la ubicación en el candadito 🔒"),
                 { enableHighAccuracy: true }
             );
         }
     }
 
-    // NAVEGACIÓN ENTRE PANTALLAS
     function mostrarRegistro() { ocultarTodo(); document.getElementById('seccion-registro').classList.remove('oculto'); }
     function mostrarLogin() { ocultarTodo(); document.getElementById('seccion-login').classList.remove('oculto'); }
     function irPrueba() { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa(); }
     function volverInicio() { ocultarTodo(); document.getElementById('pantalla-inicio').classList.remove('oculto'); }
-    function ocultarTodo() {
-        document.querySelectorAll('.caja, .inicio').forEach(el => el.classList.add('oculto'));
-    }
+    function ocultarTodo() { document.querySelectorAll('.caja, .inicio').forEach(el => el.classList.add('oculto')); }
 
-    // FUNCIONES
     function registrar() {
         const corr = document.getElementById('correo').value;
         const clav = document.getElementById('clave').value;
@@ -198,15 +169,13 @@
         if (!corr || !clav) return alert("Completá todos los datos");
         ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa();
     }
-    function elegirTipo(tipo) {
-        setTimeout(() => { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa(); }, 1200);
-    }
+    function elegirTipo(tipo) { setTimeout(() => { ocultarTodo(); document.getElementById('seccion-grupo').classList.remove('oculto'); iniciarMapa(); }, 1200); }
     function crearGrupo() {
         codigoGrupoActual = Math.floor(Math.random() * 90000 + 10000).toString();
         document.getElementById('codigo-mostrado').textContent = codigoGrupoActual;
         document.getElementById('codigo-creado').classList.remove('oculto');
         document.getElementById('codigo-grupo').value = codigoGrupoActual;
-        alert("✅ Grupo creado: " + codigoGrupoActual + "\nCompartí este código");
+        alert("✅ Grupo creado: " + codigoGrupoActual);
     }
     function entrarGrupo() {
         const cod = document.getElementById('codigo-grupo').value.trim();
@@ -226,21 +195,12 @@
         let txt = tipo=="peligro" ? "🚨 ¡ALERTA DE PELIGRO!" : tipo=="llegue" ? "✅ Ya llegué" : "⏳ Me demoro más";
         alert(txt + "\n✅ Enviado al grupo");
     }
-    function salirGrupo() {
-        if (confirm("¿Cerrar y dejar de compartir ubicación?")) {
-            codigoGrupoActual = null;
-            volverInicio();
-        }
-    }
+    function salirGrupo() { if (confirm("¿Cerrar y dejar de compartir ubicación?")) { codigoGrupoActual = null; volverInicio(); } }
 
-    // LEER CÓDIGO DESDE ENLACE
-     window.onload = () => {
+    window.onload = () => {
         const p = new URLSearchParams(window.location.search);
         const cod = p.get('grupo');
-        if (cod) {
-            document.getElementById('codigo-grupo').value = cod;
-            irPrueba(); setTimeout(() => entrarGrupo(), 500);
-        }
+        if (cod) { document.getElementById('codigo-grupo').value = cod; irPrueba(); setTimeout(() => entrarGrupo(), 500); }
     };
 </script>
 </body>
