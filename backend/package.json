@@ -1,26 +1,13 @@
 {
   "name": "ruta-link",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2",
-    "mercadopago": "^2.0.8"
-  },
-  "scripts": {
-    "start": "node server.js"
+    "mercadopago": "^2.0.8",
+    "socket.io": "^4.7.2"
   }
-}
-{
-  "name": "rutaLink-servidor",
-  "version": "1.0.0",
-  "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5"
-  }
-}
-{
-  "name": "rutaLink-servidor",
-  "version": "1.0.0",
-  "dependencies": { "express": "^4.19.2", "socket.io": "^4.7.5" }
 }
