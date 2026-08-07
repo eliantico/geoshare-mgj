@@ -46,6 +46,10 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => { ubicaciones.delete(socket.id); console.log('🔌 Desconectado:', socket.id); });
 });
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
 
 const PUERTO = process.env.PORT || 3000;
 servidor.listen(PUERTO, () => console.log(`🚀 Servidor RutaLink en puerto ${PUERTO}`));
