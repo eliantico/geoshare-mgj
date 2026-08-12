@@ -1,17 +1,18 @@
 {
   "name": "ruta-link",
   "version": "1.0.0",
- "main": "servidor.js",
-  "scripts": {
-   "start": "node servidor.js" 
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "mercadopago": "^2.0.8",
-    "socket.io": "^4.7.2"  
+  "description": "Backend para GeoShare",
+  "main": "servidor.js",
   "scripts": {
     "start": "node $(find . -name 'servidor.js' -o -name 'server.js' -not -path '*/node_modules/*' | head -n 1)",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mercadopago": "^2.0.8",
+    "socket.io": "^4.7.2"
   }
 }
